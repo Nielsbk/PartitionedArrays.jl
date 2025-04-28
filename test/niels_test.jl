@@ -52,7 +52,7 @@ function main(distribute)
     # end
 
     new_A = Adapt.adapt(CuArray,new_A)
-
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = new_cache
 
     V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
     V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
