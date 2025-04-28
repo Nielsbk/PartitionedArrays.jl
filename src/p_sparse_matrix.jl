@@ -1634,6 +1634,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
         println(typeof(perm_own))
+        println(perm_own)
         sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
