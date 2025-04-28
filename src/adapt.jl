@@ -41,12 +41,12 @@ function Adapt.adapt_structure(to,v::SplitMatrix)
     blocks = Adapt.adapt_structure(to,v.blocks)
     col_per = v.col_permutation
     row_per = v.row_permutation
-    split_matrix(blocks,row_par,col_per)
+    split_matrix(blocks,row_per,col_per)
 end
 
 function Adapt.adapt_structure(to,v::PSparseMatrix)
     matrix_partition = Adapt.adapt_structure(to,v.matrix_partition)
-    col_par = v.col_permutation
-    row_par = v.row_permutation
+    col_par = v.col_partition
+    row_par = v.row_partition
     PSparseMatrix(matrix_partition,row_par,col_par,v.assembled)
 end
