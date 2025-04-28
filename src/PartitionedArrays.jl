@@ -11,6 +11,7 @@ import IterativeSolvers
 import Distances
 using BlockArrays
 using Adapt
+using CUDA
 
 export length_to_ptrs!
 export rewind_ptrs!

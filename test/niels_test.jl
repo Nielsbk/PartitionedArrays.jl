@@ -102,4 +102,4 @@ function main(distribute)
     # psparse!(A,V,cache) |> wait
 end
 
-PartitionedArrays.with_mpi(main)
+PartitionedArrays.with_debug(main)
