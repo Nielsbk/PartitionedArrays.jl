@@ -1627,16 +1627,20 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
         perm_partition!(V, change_index)
+        @show typeof(perm)
         is_own = firstindex(V):n_own_data
-        is_own = Adapt.adapt(CuArray,is_own)
         is_ghost = (n_own_data+1):lastindex(V)
-        is_ghost = Adapt.adapt(CuArray,is_ghost)
         V_own_own = view(V, is_own)
         V_own_ghost = view(V, is_ghost)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
+        perm_own = Adapt.adapt(CuArray,perm_own)
+        perm_ghost = Adapt.adapt(CuArray,perm_ghost)
+        V_own_own = Adapt.adapt(CuArray,V_own_own)
+        V_own_ghost = Adapt.adapt(CuArray,V_own_ghost)
         println(typeof(perm_own))
         println(perm_own)
+
         sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
