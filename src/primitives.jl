@@ -1026,7 +1026,7 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
     @assert length(rcv_ids) == length(snd)
     for rcv_id in 1:length(rcv_ids)
         for (i, snd_id) in enumerate(rcv_ids[rcv_id])
-            snd_snd_id = JaggedArray(snd[snd_id])
+            snd_snd_id = jagged_array(snd[snd_id])
             j = first(findall(k->k==rcv_id,snd_ids[snd_id]))
             ptrs_rcv = rcv[rcv_id].ptrs
             ptrs_snd = snd_snd_id.ptrs
