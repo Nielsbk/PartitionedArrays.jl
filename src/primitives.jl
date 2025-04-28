@@ -1054,7 +1054,7 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
 
             ptrs_rcv = rcv[rcv_id].ptrs
             ptrs_snd = snd_snd_id.ptrs
-            @allowscalar n = ptrs_rcv[i+1] - ptrs_rcv[i]
+            CUDA.@allowscalar n = ptrs_rcv[i+1] - ptrs_rcv[i]
             # @assert n == ptrs_snd[j+1] - ptrs_snd[j]
 
             p_rcv_start = ptrs_rcv[i] 
