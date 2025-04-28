@@ -1561,6 +1561,98 @@ function psparse_yung_sheng!(A, V, cache)
     end
 end
 
+function psparse_yung_sheng_gpu!(A, V, cache)
+
+    function perm_partition!(V, perm)
+        N = length(V)
+        threads = 256
+        blocks = cld(N, threads)
+        @cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
+    end
+    function sparse_matrix!(A, V, K; reset=true)
+        if reset
+            CUDA.fill!(A.nzVal, 0)  # Reset nonzero values on GPU
+        end
+        
+        function kernel_update!(A_nz, V, K, N)
+            i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+            if i ≤ N && K[i] > 0 && i > 0
+                CUDA.atomic_add(A_nz[K[i]],V[i])  # Update nonzero elements
+            end
+            return
+        end
+    
+        A_nz = A.nzVal  # Get the nonzero values array
+        N = length(V)
+        threads = 256
+        blocks = cld(N, threads)
+    
+        CUDA.@cuda threads=threads blocks=blocks kernel_update!(A_nz, V, K, N)
+    
+        return A
+    end
+    
+
+    function kernel_perm_partition!(V,perm)
+        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+        if i <= length(perm)
+            idx = perm[i]
+            tmp = V[idx[1]]
+            V[idx[1]] = V[idx[2]]
+            V[idx[2]] = tmp
+        end
+        return
+    end
+
+    function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
+        println(typeof(V))
+        perm_partition!(V, change_index)
+        snd_index = snd_start_index:lastindex(V)
+        V_raw_snd_data = @view V[snd_index]
+        V_snd_data = V_snd.data
+        # # for (p, v) in zip(perm, V_raw_snd_data)
+        # #     V_snd_data[p] = v
+        # # end
+        V_snd_data[perm] .= V_raw_snd_data
+    end
+
+
+    function store_recv_data!(V, n_hold_data, V_rcv)
+        n_data = n_hold_data + length(V_rcv.data)
+        resize!(V, n_data)
+        rcv_index = (n_hold_data+1):n_data
+        V[rcv_index] = V_rcv.data
+        return
+    end
+    function split_and_compress!(A, V, n_own_data, change_index, perm)
+        perm_partition!(V, change_index)
+        is_own = firstindex(V):n_own_data
+        is_ghost = (n_own_data+1):lastindex(V)
+        V_own_own = view(V, is_own)
+        V_own_ghost = view(V, is_ghost)
+        perm_own = view(perm, is_own)
+        perm_ghost = view(perm, is_ghost)
+        sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
+        sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+        return
+    end
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
+    map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
+    printmpi(typeof(V_snd_buf))
+    t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
+    println("nice")
+    println(typeof(t_V))
+    PartitionedArrays.@fake_async begin
+        println("nice2.1")
+        fetch(t_V)
+        println("nice2")
+        map(store_recv_data!, V, hold_data_size, V_rcv_buf)
+        println("nice3")
+        map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
+        A
+    end
+end
+
 function assemble(A::PSparseMatrix;kwargs...)
     rows = map(remove_ghost,partition(axes(A,1))) 
     assemble(A,rows;kwargs...)
