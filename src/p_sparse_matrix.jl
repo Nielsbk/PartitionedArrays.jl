@@ -1567,7 +1567,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         N = length(V)
         threads = 256
         blocks = cld(N, threads)
-        @cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
+        CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
     end
     function sparse_matrix!(A, V, K; reset=true)
         if reset
@@ -1577,7 +1577,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         function kernel_update!(A_nz, V, K, N)
             i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
             if i ≤ N && K[i] > 0 && i > 0
-                CUDA.atomic_add(A_nz[K[i]],V[i])  # Update nonzero elements
+                CUDA.@atomic A_nz[K[i]] += V[i]  # Update nonzero elements
             end
             return
         end
@@ -1634,10 +1634,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         V_own_ghost = view(V, is_ghost)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
-        perm_own = Adapt.adapt(CuArray,perm_own)
-        perm_ghost = Adapt.adapt(CuArray,perm_ghost)
-        V_own_own = Adapt.adapt(CuArray,V_own_own)
-        V_own_ghost = Adapt.adapt(CuArray,V_own_ghost)
+        # perm_own = Adapt.adapt(CuArray,perm_own)
+        # perm_ghost = Adapt.adapt(CuArray,perm_ghost)
+        # V_own_own = Adapt.adapt(CuArray,V_own_own)
+        # V_own_ghost = Adapt.adapt(CuArray,V_own_ghost)
         println(typeof(perm_own))
         println(perm_own)
 
