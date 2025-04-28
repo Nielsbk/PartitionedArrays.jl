@@ -58,7 +58,7 @@ function main(distribute)
     V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
     perm_snd = Adapt.adapt(CuArray,perm_snd)
     change_snd = Adapt.adapt(CuArray,change_snd)
-
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
 
     new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
     copy_V = deepcopy(V)
