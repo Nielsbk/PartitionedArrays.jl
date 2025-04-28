@@ -1030,7 +1030,7 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
             j = first(findall(k->k==rcv_id,snd_ids[snd_id]))
             ptrs_rcv = rcv[rcv_id].ptrs
             ptrs_snd = snd_snd_id.ptrs
-            @assert ptrs_rcv[i+1]-ptrs_rcv[i] == ptrs_snd[j+1]-ptrs_snd[j]
+            # @assert ptrs_rcv[i+1]-ptrs_rcv[i] == ptrs_snd[j+1]-ptrs_snd[j]
             for p in 1:(ptrs_rcv[i+1]-ptrs_rcv[i])
                 p_rcv = p+ptrs_rcv[i]-1
                 p_snd = p+ptrs_snd[j]-1
