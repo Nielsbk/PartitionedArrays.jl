@@ -1639,7 +1639,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
-    printmpi(typeof(V_snd_buf))
+
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
     println("nice")
     println(typeof(t_V))
