@@ -1017,6 +1017,29 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T
     @fake_async rcv
 end
 
+# function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
+#     @assert is_consistent(graph)
+#     @assert eltype(rcv) <: JaggedArray 
+#     snd_ids = graph.snd
+#     rcv_ids = graph.rcv
+#     @assert length(rcv_ids) == length(rcv)
+#     @assert length(rcv_ids) == length(snd)
+#     for rcv_id in 1:length(rcv_ids)
+#         for (i, snd_id) in enumerate(rcv_ids[rcv_id])
+#             snd_snd_id = jagged_array(snd[snd_id])
+#             j = first(findall(k->k==rcv_id,snd_ids[snd_id]))
+#             ptrs_rcv = rcv[rcv_id].ptrs
+#             ptrs_snd = snd_snd_id.ptrs
+#             @assert ptrs_rcv[i+1]-ptrs_rcv[i] == ptrs_snd[j+1]-ptrs_snd[j]
+#             for p in 1:(ptrs_rcv[i+1]-ptrs_rcv[i])
+#                 p_rcv = p+ptrs_rcv[i]-1
+#                 p_snd = p+ptrs_snd[j]-1
+#                 rcv[rcv_id].data[p_rcv] = snd_snd_id.data[p_snd]
+#             end
+#         end
+#     end
+#     @fake_async rcv
+# end
 function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
     @assert is_consistent(graph)
     # @assert eltype(rcv) <: JaggedArray 
@@ -1028,14 +1051,26 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
         for (i, snd_id) in enumerate(rcv_ids[rcv_id])
             snd_snd_id = jagged_array(snd[snd_id])
             j = first(findall(k->k==rcv_id,snd_ids[snd_id]))
+
             ptrs_rcv = rcv[rcv_id].ptrs
             ptrs_snd = snd_snd_id.ptrs
+            n = ptrs_rcv[i+1] - ptrs_rcv[i]
+            @assert n == ptrs_snd[j+1] - ptrs_snd[j]
+
+            p_rcv_start = ptrs_rcv[i] + 1 
+            p_snd_start = ptrs_snd[j] + 1
+
+            # Perform the copy directly on the GPU:
+            copyto!(
+                view(rcv[rcv_id].data, p_rcv_start : p_rcv_start + n - 1),
+                view(snd[snd_id].data, p_snd_start : p_snd_start + n - 1)
+            )
             # @assert ptrs_rcv[i+1]-ptrs_rcv[i] == ptrs_snd[j+1]-ptrs_snd[j]
-            for p in 1:(ptrs_rcv[i+1]-ptrs_rcv[i])
-                p_rcv = p+ptrs_rcv[i]-1
-                p_snd = p+ptrs_snd[j]-1
-                rcv[rcv_id].data[p_rcv] = snd_snd_id.data[p_snd]
-            end
+            # for p in 1:(ptrs_rcv[i+1]-ptrs_rcv[i])
+            #     p_rcv = p+ptrs_rcv[i]-1
+            #     p_snd = p+ptrs_snd[j]-1
+            #     rcv[rcv_id].data[p_rcv] = snd_snd_id.data[p_snd]
+            # end
         end
     end
     @fake_async rcv
