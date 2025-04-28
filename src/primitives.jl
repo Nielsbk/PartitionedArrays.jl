@@ -1057,8 +1057,8 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
             CUDA.@allowscalar n = ptrs_rcv[i+1] - ptrs_rcv[i]
             # @assert n == ptrs_snd[j+1] - ptrs_snd[j]
 
-            p_rcv_start = ptrs_rcv[i] 
-            p_snd_start = ptrs_snd[j] 
+            CUDA.@allowscalar p_rcv_start = ptrs_rcv[i] 
+            CUDA.@allowscalar p_snd_start = ptrs_snd[j] 
 
             # Perform the copy directly on the GPU:
             copyto!(
