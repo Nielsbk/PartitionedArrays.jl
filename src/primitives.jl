@@ -1019,7 +1019,7 @@ end
 
 function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
     @assert is_consistent(graph)
-    @assert eltype(rcv) <: JaggedArray
+    @assert eltype(rcv) <: JaggedArray | GenericJaggedArray
     snd_ids = graph.snd
     rcv_ids = graph.rcv
     @assert length(rcv_ids) == length(rcv)
