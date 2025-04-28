@@ -60,7 +60,7 @@ function main(distribute)
     change_snd = Adapt.adapt(CuArray,change_snd)
 
 
-    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = new_cache
+    new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
     copy_V = deepcopy(V)
     copy_V = Adapt.adapt(CuArray,copy_V)
     PartitionedArrays.psparse_yung_sheng_gpu!(new_A,copy_V,new_cache) |> wait
