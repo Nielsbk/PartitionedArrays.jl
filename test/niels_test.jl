@@ -61,9 +61,9 @@ function main(distribute)
 
     copy_V = deepcopy(V)
     copy_V = Adapt.adapt(CuArray,copy_V)
-    psparse_yung_sheng_gpu(new_A,copy_V,new_cache) |> wait
+    PartitionedArrays.psparse_yung_sheng_gpu(new_A,copy_V,new_cache) |> wait
 
-    
+
 
     # println(typeof(new_A))
     # if MPI.Comm_rank(comm) == 1
