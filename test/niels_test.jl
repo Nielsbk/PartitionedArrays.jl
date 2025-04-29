@@ -76,6 +76,8 @@ function main(distribute)
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
+
+    @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
     # map(new_A) do val
     #     @show val
     # end
