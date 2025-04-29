@@ -34,7 +34,7 @@ end
 function Adapt.adapt_structure(to,v::JaggedArray)
     data = Adapt.adapt_structure(to,v.data)
     ptrs = Adapt.adapt_structure(to,v.ptrs)
-    jagged_array(data, v.ptrs)
+    jagged_array(data, ptrs)
 end
 
 function Adapt.adapt_structure(to,v::SplitMatrix)
