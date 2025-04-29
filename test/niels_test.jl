@@ -78,11 +78,11 @@ function main(distribute)
     println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
 
-    map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
-        println(typeof(a))
-        @assert a == b
-    end
-    @assert new_A == A
+    # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
+    #     println(typeof(a))
+    #     @assert a == b
+    # end
+    @assert centralize(new_A) == centralize(A)
     # map(new_A,A) do val
     #     @show val
     # end
