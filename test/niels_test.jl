@@ -77,8 +77,10 @@ function main(distribute)
     println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
 
-    @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
-    # map(new_A) do val
+    map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
+        @assert a == b
+    end
+    # map(new_A,A) do val
     #     @show val
     # end
     # if MPI.Comm_rank(comm) == 1
