@@ -83,7 +83,7 @@ function main(distribute)
     
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
-    @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
+    # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
     # @show PartitionedArrays.local_values(A)
 
 
@@ -92,9 +92,9 @@ function main(distribute)
 
 
 
-    
 
-    # @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
+
+    @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
     # map(new_A,A) do val
     #     @show val
     # end
