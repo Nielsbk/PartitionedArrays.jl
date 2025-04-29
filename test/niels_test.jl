@@ -64,7 +64,7 @@ function main(distribute)
     new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
     copy_V = deepcopy(V)
     copy_V = Adapt.adapt(CuArray,copy_V)
-    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     PartitionedArrays.psparse_yung_sheng_gpu!(new_A,copy_V,new_cache) |> wait
 
 
