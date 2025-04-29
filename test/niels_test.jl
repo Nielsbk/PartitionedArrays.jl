@@ -79,6 +79,7 @@ function main(distribute)
     @show PartitionedArrays.local_values(new_A)
 
     map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
+        println(typeof(a))
         @assert a == b
     end
     @assert new_A == A
