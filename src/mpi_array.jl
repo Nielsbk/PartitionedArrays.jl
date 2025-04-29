@@ -592,7 +592,7 @@ function exchange_impl!(
     for (i,id_rcv) in enumerate(graph.rcv.item)
         rank_rcv = id_rcv-1
         ptrs_rcv = data_rcv.ptrs
-        buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1))
+        buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
         ireq += 1
         GC.@preserve state MPI.Irecv!(buff_rcv,comm,req_all[ireq];source=rank_rcv,tag=EXCHANGE_IMPL_TAG)
     end
