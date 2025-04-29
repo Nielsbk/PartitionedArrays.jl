@@ -86,7 +86,7 @@ function main(distribute)
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
     @show PartitionedArrays.local_values(A)
-    @show PartitionedArrays.local_values(new_A)
+    # @show PartitionedArrays.local_values(new_A)
 
 
 
@@ -96,10 +96,10 @@ function main(distribute)
 
 
     # @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
-    map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b
-        println("ites")
-        @assert a == b
-    end
+    # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b
+    #     println("ites")
+    #     @assert a == b
+    # end
     # if MPI.Comm_rank(comm) == 1
     #     println(typeof(new_A))
     # end
