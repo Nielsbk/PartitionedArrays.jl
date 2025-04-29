@@ -79,8 +79,6 @@ function main(distribute)
 
 
 
-
-
     println(typeof(A))
     new_A = Adapt.adapt(Array,new_A)
     A = Adapt.adapt(CuArray,A)
@@ -88,7 +86,7 @@ function main(distribute)
     println(typeof(A))
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
-    @show PartitionedArrays.local_values(A)
+    @show PartitionedArrays.local_values(new_A)
 
     # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
     #     println(typeof(a))
