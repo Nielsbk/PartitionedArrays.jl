@@ -73,7 +73,7 @@ function main(distribute)
 
     println(typeof(new_A))
     new_A = Adapt.adapt(SparseMatrixCSC,new_A)
-    # println(typeof(A))
+    println(typeof(new_A))
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
