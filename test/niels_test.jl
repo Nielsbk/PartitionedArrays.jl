@@ -85,8 +85,8 @@ function main(distribute)
     println("____________________________________________________________")
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
-    @show PartitionedArrays.local_values(A)
-    # @show PartitionedArrays.local_values(new_A)
+    # @show PartitionedArrays.local_values(A)
+    @show PartitionedArrays.local_values(new_A)
 
 
 
