@@ -74,6 +74,7 @@ function main(distribute)
     println(typeof(new_A))
     println(typeof(A))
     @show PartitionedArrays.local_values(A)
+    println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
     # map(new_A) do val
     #     @show val
