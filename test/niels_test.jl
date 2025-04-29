@@ -72,6 +72,7 @@ function main(distribute)
 
 
     println(typeof(new_A))
+    new_A = Adapt.adapt(SparseMatrixCSC,new_A)
     # println(typeof(A))
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
@@ -80,6 +81,7 @@ function main(distribute)
     map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
         @assert a == b
     end
+    @assert new_A == A
     # map(new_A,A) do val
     #     @show val
     # end
