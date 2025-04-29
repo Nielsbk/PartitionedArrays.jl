@@ -73,8 +73,8 @@ function main(distribute)
 
     println(typeof(new_A))
     println(typeof(A))
-    println(A.blocks)
-    println(new_A.blocks)
+    @show A.blocks
+    @show new_A.blocks
     # if MPI.Comm_rank(comm) == 1
     #     println(typeof(new_A))
     # end
