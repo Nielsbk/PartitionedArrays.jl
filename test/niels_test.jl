@@ -85,7 +85,7 @@ function main(distribute)
     println("____________________________________________________________")
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
-    # @show PartitionedArrays.local_values(A)
+    @show PartitionedArrays.local_values(A)
 
 
 
@@ -135,4 +135,4 @@ function main(distribute)
     # psparse!(A,V,cache) |> wait
 end
 
-PartitionedArrays.with_debug(main)
+PartitionedArrays.with_mpi(main)
