@@ -9,6 +9,15 @@ import Adapt
 using CUDA
 using MPI
 
+
+# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
+Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+    size(A)...,
+    collect(A.colptr),
+    collect(A.rowval),
+    collect(A.nzval),
+)
+
 function main(distribute)
 
     #println(1)
@@ -72,7 +81,7 @@ function main(distribute)
 
 
     println(typeof(new_A))
-    new_A = Adapt.adapt(SparseMatrixCSC,new_A)
+    new_A = Adapt.adapt(Array,new_A)
     println(typeof(new_A))
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
@@ -80,6 +89,7 @@ function main(distribute)
 
     map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
         println(typeof(a))
+        a.blocks
         @assert a == b
     end
     # new_A_seq = PartitionedArrays.centralize(new_A)
