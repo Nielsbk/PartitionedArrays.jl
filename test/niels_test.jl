@@ -13,9 +13,9 @@ using MPI
 # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
     size(A)...,
-    collect(A.colptr),
-    collect(A.rowval),
-    collect(A.nzval),
+    collect(A.colPtr),
+    collect(A.rowVal),
+    collect(A.nzVal),
 )
 
 function main(distribute)
