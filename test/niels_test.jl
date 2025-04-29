@@ -75,6 +75,9 @@ function main(distribute)
     println(typeof(A))
     @show A
     @show new_A
+    map(new_A) do val
+        @show val
+    end
     # if MPI.Comm_rank(comm) == 1
     #     println(typeof(new_A))
     # end
