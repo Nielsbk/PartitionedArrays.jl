@@ -73,8 +73,8 @@ function main(distribute)
 
     println(typeof(new_A))
     println(typeof(A))
-    @show local_values(A)
-    @show local_values(new_A)
+    @show PartitionedArrays.local_values(A)
+    @show PartitionedArrays.local_values(new_A)
     # map(new_A) do val
     #     @show val
     # end
