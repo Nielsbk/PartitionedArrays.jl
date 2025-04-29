@@ -82,7 +82,13 @@ function main(distribute)
     #     println(typeof(a))
     #     @assert a == b
     # end
-    @assert PartitionedArrays.centralize(new_A) == PartitionedArrays.centralize(A)
+    # new_A_seq = PartitionedArrays.centralize(new_A)
+    # A_seq = PartitionedArrays.centralize(A)
+    # println(typeof(new_A_seq))
+    # println(typeof(A_seq))
+    # @show A_seq
+
+    @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
     # map(new_A,A) do val
     #     @show val
     # end
