@@ -80,18 +80,20 @@ function main(distribute)
 
 
 
-    println(typeof(new_A))
+    println(typeof(A))
     new_A = Adapt.adapt(Array,new_A)
-    println(typeof(new_A))
+    A = Adapt.adapt(CuArray,A)
+    A = Adapt.adapt(Array,A)
+    println(typeof(A))
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
-    @show PartitionedArrays.local_values(new_A)
+    @show PartitionedArrays.local_values(A)
 
-    map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
-        println(typeof(a))
-        a.blocks
-        @assert a == b
-    end
+    # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
+    #     println(typeof(a))
+    #     a.blocks
+    #     @assert a == b
+    # end
     # new_A_seq = PartitionedArrays.centralize(new_A)
     # A_seq = PartitionedArrays.centralize(A)
     # println(typeof(new_A_seq))
