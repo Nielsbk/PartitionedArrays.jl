@@ -85,16 +85,14 @@ function main(distribute)
     println("____________________________________________________________")
     @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
     # @show PartitionedArrays.local_values(A)
-    # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
-    #     println(typeof(a))
-    #     a.blocks
-    #     @assert a == b
-    # end
-    # new_A_seq = PartitionedArrays.centralize(new_A)
-    # A_seq = PartitionedArrays.centralize(A)
-    # println(typeof(new_A_seq))
-    # println(typeof(A_seq))
-    # @show A_seq
+
+
+
+
+
+
+
+    
 
     # @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
     # map(new_A,A) do val
