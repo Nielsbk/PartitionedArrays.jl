@@ -87,7 +87,7 @@ function main(distribute)
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
     @show PartitionedArrays.local_values(new_A)
-
+    @show PartitionedArrays.local_values(A)
     # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b 
     #     println(typeof(a))
     #     a.blocks
