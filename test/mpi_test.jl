@@ -16,7 +16,7 @@ function main()
 
         for src in 1:size-1
             offset = src * N
-            MPI.IRecv!(view(all_data, offset+1:offset+N), src, 0, comm)
+            MPI.Irecv!(view(all_data, offset+1:offset+N), src, 0, comm)
         end
 
         println("Rank 0 received:")
@@ -24,7 +24,7 @@ function main()
         println(host_data)
 
     else
-        MPI.ISend!(gpu_buf, 0, 0, comm)
+        MPI.Isend!(gpu_buf, 0, 0, comm)
     end
 
     MPI.Barrier(comm)
