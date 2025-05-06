@@ -1,34 +1,28 @@
+# examples/04-sendrecv.jl
 using MPI
-using CUDA
+MPI.Init()
 
-function main()
-    MPI.Init()
-    comm = MPI.COMM_WORLD
-    rank = MPI.Comm_rank(comm)
-    size = MPI.Comm_size(comm)
+comm = MPI.COMM_WORLD
+rank = MPI.Comm_rank(comm)
+size = MPI.Comm_size(comm)
 
-    N = 10
-    gpu_buf = CUDA.fill(rank, N)
+dst = mod(rank+1, size)
+src = mod(rank-1, size)
 
-    if rank == 0
-        all_data = CUDA.zeros(Int, N * size)
-        all_data[1:N] .= gpu_buf
+N = 4
 
-        for src in 1:size-1
-            offset = src * N
-            MPI.Irecv!(view(all_data, offset+1:offset+N), src, 0, comm)
-        end
+send_mesg = Array{Float64}(undef, N)
+recv_mesg = Array{Float64}(undef, N)
 
-        println("Rank 0 received:")
-        host_data = Array(reshape(all_data, N, size))
-        println(host_data)
+fill!(send_mesg, Float64(rank))
 
-    else
-        MPI.Isend(gpu_buf, 0, 0, comm)
-    end
+rreq = MPI.Irecv!(recv_mesg, comm; source=src, tag=src+32)
 
-    MPI.Barrier(comm)
-    MPI.Finalize()
-end
+print("$rank: Sending   $rank -> $dst = $send_mesg\n")
+sreq = MPI.Isend(send_mesg, comm; dest=dst, tag=rank+32)
 
-main()
+stats = MPI.Waitall([rreq, sreq])
+
+print("$rank: Received $src -> $rank = $recv_mesg\n")
+
+MPI.Barrier(comm)
