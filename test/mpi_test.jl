@@ -20,7 +20,7 @@ recv_mesg = Array{Float64}(undef, N)
 fill!(send_mesg, Float64(rank))
 
 send_mesg = CuArray(send_mesg)
-@show send_mesg
+println(typeof(send_mesg))
 recv_mesg = CuArray(recv_mesg)
 
 
