@@ -20,7 +20,7 @@ recv_mesg = Array{Float64}(undef, N)
 fill!(send_mesg, Float64(rank))
 
 send_mesg = CuArray(send_mesg)
-println(typeof(send_mesg))
+
 recv_mesg = CuArray(recv_mesg)
 
 
@@ -29,8 +29,6 @@ rreq = MPI.Irecv!(recv_mesg, comm; source=src, tag=src+32)
 print("$rank: Sending   $rank -> $dst = $Array(send_mesg)\n")
 sreq = MPI.Isend(send_mesg, comm; dest=dst, tag=rank+32)
 
-println(sreq)
-println(rreq)
 stats = MPI.Waitall([rreq, sreq])
 
 print("$rank: Received $src -> $rank = $Array(recv_mesg)\n")
