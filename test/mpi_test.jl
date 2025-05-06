@@ -24,7 +24,7 @@ function main()
         println(host_data)
 
     else
-        MPI.Isend!(gpu_buf, 0, 0, comm)
+        MPI.Isend(gpu_buf, 0, 0, comm)
     end
 
     MPI.Barrier(comm)
