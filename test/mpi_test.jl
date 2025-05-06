@@ -28,6 +28,8 @@ rreq = MPI.Irecv!(recv_mesg, comm; source=src, tag=src+32)
 print("$rank: Sending   $rank -> $dst = $Array(send_mesg)\n")
 sreq = MPI.Isend(send_mesg, comm; dest=dst, tag=rank+32)
 
+println(sreq)
+println(rreq)
 stats = MPI.Waitall([rreq, sreq])
 
 print("$rank: Received $src -> $rank = $Array(recv_mesg)\n")
