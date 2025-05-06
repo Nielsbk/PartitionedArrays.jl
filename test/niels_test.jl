@@ -18,6 +18,11 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
     collect(A.nzVal),
 )
 
+function fem(distribute)
+
+
+end
+
 function main(distribute)
 
     #println(1)
@@ -136,4 +141,5 @@ function main(distribute)
     # psparse!(A,V,cache) |> wait
 end
 
-PartitionedArrays.with_debug(main)
+# PartitionedArrays.with_debug(main)
+PartitionedArrays.with_debug(fem)
