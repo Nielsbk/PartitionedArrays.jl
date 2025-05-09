@@ -9,8 +9,8 @@ dst = mod(rank+1, size)
 src = mod(rank-1, size)
 println("rank=$rank, size=$size, dst=$dst, src=$src")
 N = 2
-send_mesg = CuArray{Float64}(undef, N)
-recv_mesg = CuArray{Float64}(undef, N)
+send_mesg = Array{Float64}(undef, N)
+recv_mesg = Array{Float64}(undef, N)
 
 fill!(send_mesg, Float64(rank))
 println(Array(send_mesg))
