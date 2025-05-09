@@ -17,4 +17,4 @@ println(Array(send_mesg))
 #rreq = MPI.Irecv!(recv_mesg, src,  src+32, comm)
 MPI.Sendrecv!(send_mesg, dst, 0, recv_mesg, src, 0, comm)
 
-println("recv_mesg on proc $rank: $recv_mesg")
+# println("recv_mesg on proc $rank: $recv_mesg")
