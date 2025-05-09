@@ -11,8 +11,9 @@ println("rank=$rank, size=$size, dst=$dst, src=$src")
 N = 2
 send_mesg = CuArray{Float64}(undef, N)
 recv_mesg = CuArray{Float64}(undef, N)
-println(Array(send_mesg))
+
 fill!(send_mesg, Float64(rank))
+println(Array(send_mesg))
 #rreq = MPI.Irecv!(recv_mesg, src,  src+32, comm)
 MPI.Sendrecv!(send_mesg, dst, 0, recv_mesg, src, 0, comm)
 
