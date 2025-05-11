@@ -29,8 +29,17 @@ function time(distribute)
     timing = distribute([[] for i in 1:size ])
 
     nodes_per_dir = map(i->2*i,parts_per_dir)
-    args = laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
-    A, cache = PartitionedArrays.psparse_yung_sheng!(args...) |> fetch
+    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+    if rank == 1
+        println(typeof(args))
+    end
+    A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
+
+    new_A = deepcopy(A)
+    new_cache = deepcopy(cache)
+
+    
+
 
 
 
@@ -104,7 +113,7 @@ function main(distribute)
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
     # @show PartitionedArrays.local_values(A)
-    @display PartitionedArrays.local_values(new_A)
+    @show PartitionedArrays.local_values(new_A)
 
 
 
@@ -154,5 +163,5 @@ function main(distribute)
     # psparse!(A,V,cache) |> wait
 end
 
-PartitionedArrays.with_debug(main)
-# PartitionedArrays.with_debug(fem)
+# PartitionedArrays.with_debug(main)
+PartitionedArrays.with_mpi(time)
