@@ -43,12 +43,26 @@ function time(distribute)
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
-    V = map(rank) do rank
-        [9,9,8,10,6]
-    end
+    # V = map(rank) do rank
+    #     [9,9,8,10,6]
+    # end
+    # _,_,V = map(parts) do part
+    #     if part == 1
+    #         [1,2,1,2,2], [2,6,1,2,1], [1.0,2.0,30.0,10.0,1.0]
+    #     elseif part == 2
+    #         [3,3,4,6], [3,9,4,2], [10.0,2.0,30.0,2.0]
+    #     elseif part == 3
+    #         [5,5,6,6,6,7], [5,6,2,5,6,7], [10.0,2.0,0.0,0.0,30.0,1.0]
+    #     else
+    #         [9,9,8,10,6], [9,3,8,10,5], [10.0,2.0,30.0,50.0,2.0]
+    #     end
+    # end |> PartitionedArrays.tuple_of_arrays
 
     nodes_per_dir = map(i->2*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+
+    _,_,V,_,_ = args...
+
     if rank == 1
         println(typeof(args))
     end
