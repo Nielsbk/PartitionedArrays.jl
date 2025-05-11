@@ -18,6 +18,22 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
     collect(A.nzVal),
 )
 
+
+function cache_to_gpu(cache)
+
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
+
+    V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
+    V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
+    perm_snd = Adapt.adapt(CuArray,perm_snd)
+    change_snd = Adapt.adapt(CuArray,change_snd)
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
+    perm_sparse = Adapt.adapt(CuArray,perm_sparse)
+
+    cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+    return cache
+end
+
 function time(distribute)
 
     comm = MPI.COMM_WORLD
@@ -37,11 +53,15 @@ function time(distribute)
 
     new_A = deepcopy(A)
     new_cache = deepcopy(cache)
+    new_cache = cache_to_gpu(new_cache)
+    new_A = Adapt.adapt(CuArray,new_A)
+
+
+    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
     
-
-
-
+    PartitionedArrays.psparse_yung_sheng_gpu!(new_A,copy_V,new_cache) |> wait
+   
 
 end
 
