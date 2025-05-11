@@ -18,7 +18,20 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
     collect(A.nzVal),
 )
 
-function fem(distribute)
+function time(distribute)
+
+    comm = MPI.COMM_WORLD
+    rank = MPI.Comm_rank(comm)
+    size = MPI.Comm_size(comm)
+    parts_per_dir = (size,)
+    p = prod(parts_per_dir)
+    ranks = distribute(LinearIndices((p,)))
+    timing = distribute([[] for i in 1:size ])
+
+    nodes_per_dir = map(i->2*i,parts_per_dir)
+    args = laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+    A, cache = PartitionedArrays.psparse_yung_sheng!(args...) |> fetch
+
 
 
 end
@@ -91,7 +104,7 @@ function main(distribute)
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
     # @show PartitionedArrays.local_values(A)
-    @show PartitionedArrays.local_values(new_A)
+    @display PartitionedArrays.local_values(new_A)
 
 
 
@@ -141,5 +154,5 @@ function main(distribute)
     # psparse!(A,V,cache) |> wait
 end
 
-# PartitionedArrays.with_debug(main)
-PartitionedArrays.with_debug(fem)
+PartitionedArrays.with_debug(main)
+# PartitionedArrays.with_debug(fem)

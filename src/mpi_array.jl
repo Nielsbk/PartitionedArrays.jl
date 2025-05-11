@@ -613,6 +613,64 @@ function exchange_impl!(
     end
 end
 
+function exchange_impl!(
+    rcv::MPIArray,
+    snd::MPIArray,
+    graph::ExchangeGraph{<:MPIArray},
+    setup,
+    ::Type{T}) where T <: CuArray
+
+    @assert size(rcv) == size(snd)
+    @assert graph.rcv.comm === graph.rcv.comm
+    @assert graph.rcv.comm === graph.snd.comm
+    comm = graph.rcv.comm
+    data_snd = jagged_array(snd.item)
+    data_rcv = rcv.item
+    @assert isa(data_rcv,AbstractJaggedArray)
+    req_all = setup
+    ireq = 0
+    state = (snd,rcv)
+    buffers_rcv =[]
+    for (i,id_rcv) in enumerate(graph.rcv.item)
+        rank_rcv = id_rcv-1
+        ptrs_rcv = data_rcv.ptrs
+        buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
+        push!(buffers_rcv[i], Array(buff_rcv))
+        ireq += 1
+        GC.@preserve state MPI.Irecv!(buffers_rcv[i],comm,req_all[ireq];source=rank_rcv,tag=EXCHANGE_IMPL_TAG)
+    end
+    buffers_snd =[]
+    for (i,id_snd) in enumerate(graph.snd.item)
+        rank_snd = id_snd-1
+        ptrs_snd = data_snd.ptrs
+        buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
+        push!(buffers_snd[i], Array(buff_snd))
+        ireq += 1
+        GC.@preserve state MPI.Isend(buffers_snd[i],comm,req_all[ireq];dest=rank_snd,tag=EXCHANGE_IMPL_TAG)
+    end
+    @fake_async begin
+        @static if isdefined(MPI,:Waitall)
+            GC.@preserve state MPI.Waitall(req_all)
+        else
+            GC.@preserve state MPI.Waitall!(req_all)
+        end
+        for (i,id_rcv) in enumerate(graph.rcv.item)
+            rank_rcv = id_rcv-1
+            ptrs_rcv = data_rcv.ptrs
+            buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
+            copyto!(buff_rcv, buffers_rcv[i])
+        end
+        buffers_snd =[]
+        for (i,id_snd) in enumerate(graph.snd.item)
+            rank_snd = id_snd-1
+            ptrs_snd = data_snd.ptrs
+            buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
+            copyto!(buff_snd, buffers_snd[i])
+        end
+        rcv
+    end
+end
+
 # This should go eventually into MPI.jl! 
 Issend(data, comm::MPI.Comm, req=MPI.Request(); dest::Integer, tag::Integer=0) =
     Issend(data, dest, tag, comm, req)
