@@ -43,6 +43,9 @@ function time(distribute)
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
+    V = map(rank) do rank
+        [9,9,8,10,6]
+    end
 
     nodes_per_dir = map(i->2*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
@@ -64,10 +67,10 @@ function time(distribute)
     perm_sparse = Adapt.adapt(CuArray,perm_sparse)
 
     new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
-    
-    new_cache = cache_to_gpu(new_cache)
-    new_A = Adapt.adapt(CuArray,new_A)
 
+    # new_cache = cache_to_gpu(new_cache)
+    new_A = Adapt.adapt(CuArray,new_A)
+    new_V = Adapt.adapt(CuArray,deepcopy(V))
 
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
