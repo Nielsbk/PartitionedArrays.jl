@@ -74,7 +74,9 @@ function time(distribute)
 
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
-
+    if rank == 1
+        println("cpu works")
+    end
     PartitionedArrays.psparse_yung_sheng_gpu!(new_A,copy_V,new_cache) |> wait
    
 
