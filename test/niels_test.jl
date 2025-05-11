@@ -61,7 +61,7 @@ function time(distribute)
     nodes_per_dir = map(i->2*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
-    _,_,V,_,_ = args...
+    _,_,V,_,_ = args
 
     if rank == 1
         println(typeof(args))
