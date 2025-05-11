@@ -72,6 +72,11 @@ function time(distribute)
     new_A = Adapt.adapt(CuArray,new_A)
     new_V = Adapt.adapt(CuArray,deepcopy(V))
 
+    if rank == 1
+        println(typeof(A))
+        println(typeof(V))
+        println(typeof(cache))
+    end
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
     if rank == 1
