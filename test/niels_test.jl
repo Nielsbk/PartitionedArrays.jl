@@ -41,7 +41,7 @@ function time(distribute)
     size = MPI.Comm_size(comm)
     parts_per_dir = (size,size,size)
     p = prod(parts_per_dir)
-    ranks = distribute(LinearIndices((p,)))
+    ranks = distribute(LinearIndices((size,)))
     timing = distribute([[] for i in 1:size ])
 
     nodes_per_dir = map(i->1000*i,parts_per_dir)
