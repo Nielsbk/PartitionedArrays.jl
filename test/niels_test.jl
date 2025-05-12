@@ -161,6 +161,7 @@ function main(distribute)
         # # println("\n\n\n")
         # PartitionedArrays.centralize(A) |> display
     # end
+    println(PartitionedArrays.centralize(new_A) == PartitionedArrays.centralize(A))
     @test PartitionedArrays.centralize(new_A) == PartitionedArrays.centralize(A)
     # PartitionedArrays.centralize(A) |> display
     # @show PartitionedArrays.local_values(A)
