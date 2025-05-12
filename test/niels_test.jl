@@ -155,18 +155,20 @@ function main(distribute)
 
     new_A = Adapt.adapt(Array,new_A)
 
+    centralize(new_A) |> display
+    centralize(A) |> display
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
 
     # @show PartitionedArrays.local_values(A)
-    println(PartitionedArrays.local_values(A))
-    map(PartitionedArrays.local_values(A)) do val
-        println(val)
-    end
-    map(PartitionedArrays.local_values(new_A)) do val
-        println(val)
-    end
+    # println(PartitionedArrays.local_values(A))
+    # map(PartitionedArrays.local_values(A)) do val
+    #     println(val)
+    # end
+    # map(PartitionedArrays.local_values(new_A)) do val
+    #     println(val)
+    # end
     # @show PartitionedArrays.local_values(new_A)
 
 
