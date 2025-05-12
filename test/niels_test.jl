@@ -49,9 +49,9 @@ function time(distribute)
 
     _,_,V,_,_ = args
 
-    # if rank == 1
-    #     println(typeof(args))
-    # end
+    if rank == 1
+        println(typeof(V))
+    end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
 
     new_A = deepcopy(A)
