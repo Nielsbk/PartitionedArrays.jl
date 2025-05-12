@@ -635,7 +635,7 @@ function exchange_impl!(
         rank_rcv = id_rcv-1
         ptrs_rcv = data_rcv.ptrs
         buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
-        push!(buffers_rcv[i], Array(buff_rcv))
+        push!(buffers_rcv, Array(buff_rcv))
         ireq += 1
         GC.@preserve state MPI.Irecv!(buffers_rcv[i],comm,req_all[ireq];source=rank_rcv,tag=EXCHANGE_IMPL_TAG)
     end
@@ -644,7 +644,7 @@ function exchange_impl!(
         rank_snd = id_snd-1
         ptrs_snd = data_snd.ptrs
         buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
-        push!(buffers_snd[i], Array(buff_snd))
+        push!(buffers_snd, Array(buff_snd))
         ireq += 1
         GC.@preserve state MPI.Isend(buffers_snd[i],comm,req_all[ireq];dest=rank_snd,tag=EXCHANGE_IMPL_TAG)
     end
@@ -660,13 +660,12 @@ function exchange_impl!(
             buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
             copyto!(buff_rcv, buffers_rcv[i])
         end
-        buffers_snd =[]
-        for (i,id_snd) in enumerate(graph.snd.item)
-            rank_snd = id_snd-1
-            ptrs_snd = data_snd.ptrs
-            buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
-            copyto!(buff_snd, buffers_snd[i])
-        end
+        # for (i,id_snd) in enumerate(graph.snd.item)
+        #     rank_snd = id_snd-1
+        #     ptrs_snd = data_snd.ptrs
+        #     buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
+        #     copyto!(buff_snd, buffers_snd[i])
+        # end
         rcv
     end
 end
