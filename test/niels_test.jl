@@ -149,6 +149,7 @@ function main(distribute)
     copy_V = deepcopy(V)
     copy_V = Adapt.adapt(CuArray,copy_V)
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    println("cpu works i guess")
     PartitionedArrays.psparse_yung_sheng_gpu!(new_A,copy_V,new_cache) |> wait
 
 
