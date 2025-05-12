@@ -39,12 +39,12 @@ function time(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
-    parts_per_dir = (size,size,size)
+    parts_per_dir = (size,)
     p = prod(parts_per_dir)
-    ranks = distribute(LinearIndices((size,)))
+    ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->1000*i,parts_per_dir)
+    nodes_per_dir = map(i->10000*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
