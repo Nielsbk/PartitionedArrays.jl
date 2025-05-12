@@ -12,7 +12,9 @@ N = 2
 send_mesg = CuArray{Float64}(undef, N)
 recv_mesg = CuArray{Float64}(undef, N)
 
-fill!(send_mesg, Float64(rank))
+CUDA.fill!(send_mesg, Float64(rank))
+CUDA.fill!(rcv_mesg, Float64(0))
+
 # println(Array(send_mesg))
 #rreq = MPI.Irecv!(recv_mesg, src,  src+32, comm)
 MPI.Sendrecv!(send_mesg, dst, 0, recv_mesg, src, 0, comm)
