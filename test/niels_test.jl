@@ -77,7 +77,7 @@ function time(distribute)
 
     end
     @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-
+    @show A
     if rank == 1
         println("cpu works")
     end
