@@ -157,11 +157,11 @@ function main(distribute)
     new_A = Adapt.adapt(Array,new_A)
 
     # if MPI.Comm_rank(comm) == 1
-        PartitionedArrays.centralize(new_A) |> display
-        # println("\n\n\n")
-        PartitionedArrays.centralize(A) |> display
+        # PartitionedArrays.centralize(new_A) |> display
+        # # println("\n\n\n")
+        # PartitionedArrays.centralize(A) |> display
     # end
-    
+    @test PartitionedArrays.centralize(new_A) == PartitionedArrays.centralize(A)
     # PartitionedArrays.centralize(A) |> display
     # @show PartitionedArrays.local_values(A)
     # println("____________________________________________________________")
