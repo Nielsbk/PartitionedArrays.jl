@@ -161,7 +161,12 @@ function main(distribute)
 
     # @show PartitionedArrays.local_values(A)
     println(PartitionedArrays.local_values(A))
-    println(PartitionedArrays.local_values(new_A))
+    map(PartitionedArrays.local_values(A)) do val
+        println(val)
+    end
+    map(PartitionedArrays.local_values(new_A)) do val
+        println(val)
+    end
     # @show PartitionedArrays.local_values(new_A)
 
 
