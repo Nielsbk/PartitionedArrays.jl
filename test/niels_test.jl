@@ -44,13 +44,15 @@ function time(distribute)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = (100,)
+    nodes_per_dir = map(i->20*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
 
-    if rank == 1
-        println(typeof(V))
+    map(V) do val
+        if rank == 1
+            println(length(val))
+        end
     end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
 
