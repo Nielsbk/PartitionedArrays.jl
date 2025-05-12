@@ -621,6 +621,11 @@ function exchange_impl!(
     ::Type{T}) where T <: CuArray
 
     @assert size(rcv) == size(snd)
+    if size(rcv) == 0
+        return @fake_async begin
+            rcv
+        end
+    end
     @assert graph.rcv.comm === graph.rcv.comm
     @assert graph.rcv.comm === graph.snd.comm
     comm = graph.rcv.comm

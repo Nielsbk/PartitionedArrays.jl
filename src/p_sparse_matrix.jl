@@ -1605,15 +1605,11 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
 
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        # println(typeof(V))
-        # println(typeof(change_index))
+
         perm_partition!(V, change_index)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = @view V[snd_index]
         V_snd_data = V_snd.data
-        # # for (p, v) in zip(perm, V_raw_snd_data)
-        # #     V_snd_data[p] = v
-        # # end
         V_snd_data[perm] .= V_raw_snd_data
     end
 
@@ -1627,19 +1623,13 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
         perm_partition!(V, change_index)
-        # @show typeof(perm)
+
         is_own = firstindex(V):n_own_data
         is_ghost = (n_own_data+1):lastindex(V)
         V_own_own = view(V, is_own)
         V_own_ghost = view(V, is_ghost)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
-        # perm_own = Adapt.adapt(CuArray,perm_own)
-        # perm_ghost = Adapt.adapt(CuArray,perm_ghost)
-        # V_own_own = Adapt.adapt(CuArray,V_own_own)
-        # V_own_ghost = Adapt.adapt(CuArray,V_own_ghost)
-        # println(typeof(perm_own))
-        # println(perm_own)
 
         sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
@@ -1649,14 +1639,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
 
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
-    # println("nice")
-    # println(typeof(t_V))
+
     PartitionedArrays.@fake_async begin
-        # println("nice2.1")
         fetch(t_V)
-        # println("nice2")
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
-        # println("nice3")
         map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
         A
     end
