@@ -49,9 +49,9 @@ function time(distribute)
 
     _,_,V,_,_ = args
 
-    if rank == 1
-        println(typeof(args))
-    end
+    # if rank == 1
+    #     println(typeof(args))
+    # end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
 
     new_A = deepcopy(A)
@@ -72,11 +72,11 @@ function time(distribute)
     new_A = Adapt.adapt(CuArray,new_A)
     new_V = Adapt.adapt(CuArray,deepcopy(V))
 
-    if rank == 1
-        println(typeof(A))
-        println(typeof(V))
-        println(typeof(cache))
-    end
+    # if rank == 1
+    #     println(typeof(A))
+    #     println(typeof(V))
+    #     println(typeof(cache))
+    # end
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
     if rank == 1
@@ -85,8 +85,8 @@ function time(distribute)
     PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
 
     if rank == 1
-        PartitionedArrays.local_values(A)
-        PartitionedArrays.local_values(Adapt.adapt(Array,A))
+        println(PartitionedArrays.local_values(A))
+        println(PartitionedArrays.local_values(Adapt.adapt(Array,A)))
     end
    
 
