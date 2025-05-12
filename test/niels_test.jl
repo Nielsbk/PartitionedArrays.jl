@@ -155,8 +155,8 @@ function main(distribute)
 
     new_A = Adapt.adapt(Array,new_A)
 
-    centralize(new_A) |> display
-    centralize(A) |> display
+    PartitionedArrays.centralize(new_A) |> display
+    PartitionedArrays.centralize(A) |> display
     # @show PartitionedArrays.local_values(A)
     println("____________________________________________________________")
     # @assert PartitionedArrays.local_values(new_A) == PartitionedArrays.local_values(A)
