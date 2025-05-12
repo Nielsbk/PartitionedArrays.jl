@@ -39,7 +39,7 @@ function time(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
-    parts_per_dir = (size / 2, size / 2)
+    parts_per_dir = (size,size,size)
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
