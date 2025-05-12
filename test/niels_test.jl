@@ -90,7 +90,7 @@ function time(distribute)
     # if rank == 1
     #     println(PartitionedArrays.local_values(A))
     #     println(PartitionedArrays.local_values(Adapt.adapt(Array,A)))
-    end
+    # end
    
 
 end
