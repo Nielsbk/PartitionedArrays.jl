@@ -74,22 +74,22 @@ function time(distribute)
     new_A = Adapt.adapt(CuArray,new_A)
     new_V = Adapt.adapt(CuArray,deepcopy(V))
 
-    if rank == 1
-        println(typeof(A))
+    # if rank == 1
+    #     println(typeof(A))
 
-    end
-    # @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    # end
+    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    @show A
-    if rank == 1
-        println("cpu works")
-    end
-    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
+    # @show A
+    # if rank == 1
+    #     println("cpu works")
+    # end
+    PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
     @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
 
-    if rank == 1
-        println(PartitionedArrays.local_values(A))
-        println(PartitionedArrays.local_values(Adapt.adapt(Array,A)))
+    # if rank == 1
+    #     println(PartitionedArrays.local_values(A))
+    #     println(PartitionedArrays.local_values(Adapt.adapt(Array,A)))
     end
    
 
