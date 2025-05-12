@@ -44,7 +44,7 @@ function time(distribute)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->100*i,parts_per_dir)
+    nodes_per_dir = map(i->1000*i,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -78,13 +78,13 @@ function time(distribute)
         println(typeof(A))
 
     end
-    @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    # @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     @show A
     if rank == 1
         println("cpu works")
     end
-    @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
+    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
     @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
 
     if rank == 1
