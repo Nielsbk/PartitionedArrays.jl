@@ -44,8 +44,8 @@ function time(distribute)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->1500000,parts_per_dir)
-    args = PartitionedArrays.laplacian_fem(nodes_per_dir,parts_per_dir,ranks)
+    nodes_per_dir = map(i->10000000,parts_per_dir)
+    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
 
