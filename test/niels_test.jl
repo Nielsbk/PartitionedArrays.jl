@@ -50,7 +50,7 @@ function time(distribute)
     _,_,V,_,_ = args
 
     map(V) do val
-        if rank == 1
+        if rank == 0
             println(length(val))
         end
     end
