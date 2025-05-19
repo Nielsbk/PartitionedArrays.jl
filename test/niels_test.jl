@@ -34,7 +34,7 @@ function cache_to_gpu(cache)
     return cache
 end
 
-function time(distribute)
+function time(distribute,n,f,nruns)
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
@@ -44,8 +44,8 @@ function time(distribute)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->100000,parts_per_dir)
-    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+    nodes_per_dir = map(i->n,parts_per_dir)
+    args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
 
@@ -78,22 +78,32 @@ function time(distribute)
     #     println(typeof(A))
 
     # end
+    t = zeros(nruns)
     @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    for irun in 1:nruns
+        t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    end
+    ts_in_main = gather(map(p->t,parts))
+    @display ts_in_main
+    # t1_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    # t2_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    # t3_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+
+    # map(timing)
     # @show A
     # if rank == 1
     #     println("cpu works")
     # end
-    @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
-    @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
-    @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
-    # if rank == 1
-    #     println(PartitionedArrays.local_values(A))
-    #     println(PartitionedArrays.local_values(Adapt.adapt(Array,A)))
-    # end
-   
+    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
+    
+    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
+    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
+
 
 end
+
+
+
 
 function main(distribute)
 
