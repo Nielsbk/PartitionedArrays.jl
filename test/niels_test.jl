@@ -117,16 +117,18 @@ function experiment(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
+    nruns = 5
+
     if rank == 0
         df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[])
     end
 
     for type in ["cpu","gpu"]
-        for n in [10000,100000,1000000]
-            params = (n,PartitionedArrays.laplacian_fdm,3, type)
+        for n in [10000,100000,1000000,10000000,100000000,1000000000,10000000000]
+            params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",5, type,timing))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing))
             end
         end
     end
