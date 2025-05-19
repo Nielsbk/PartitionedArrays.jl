@@ -118,7 +118,7 @@ function experiment(distribute)
     end
 
     for type in ["cpu","gpu"]
-        for n in [10000,100000,1000000,10000000,100000000,1000000000,200000000]
+        for n in [10000,100000,1000000,10000000,100000000,500000000]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
