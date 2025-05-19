@@ -131,9 +131,6 @@ function experiment(distribute)
         end
     end
 
- 
-
-
     if rank == 0
         filename = "data_$(size)_nodes.json"
         open(filename,"w") do io
