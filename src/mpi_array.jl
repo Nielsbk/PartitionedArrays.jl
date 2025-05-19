@@ -536,6 +536,21 @@ function setup_exchange_impl(
     req_all
 end
 
+function setup_exchange_impl(
+    rcv::MPIArray,
+    snd::MPIArray,
+    graph::ExchangeGraph{<:MPIArray},
+    ::Type{T}) where T<: CuArray
+    @assert size(rcv) == size(snd)
+    @assert graph.rcv.comm === graph.rcv.comm
+    @assert graph.rcv.comm === graph.snd.comm
+    comm = graph.rcv.comm
+    nreqs = length(graph.rcv.item) + length(graph.snd.item)
+    req_all = MPI.UnsafeMultiRequest(nreqs)
+    buffers_rcv = []
+    (req_all,buffers_rcv)
+end
+
 function exchange_impl!(
     rcv::MPIArray,
     snd::MPIArray,
@@ -632,10 +647,10 @@ function exchange_impl!(
     data_snd = jagged_array(snd.item)
     data_rcv = rcv.item
     @assert isa(data_rcv,AbstractJaggedArray)
-    req_all = setup
+    req_all,buffers_rcv = setup
     ireq = 0
     state = (snd,rcv)
-    buffers_rcv =[]
+
     for (i,id_rcv) in enumerate(graph.rcv.item)
         rank_rcv = id_rcv-1
         ptrs_rcv = data_rcv.ptrs
@@ -649,9 +664,9 @@ function exchange_impl!(
         rank_snd = id_snd-1
         ptrs_snd = data_snd.ptrs
         buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
-        push!(buffers_snd, Array(buff_snd))
+        # push!(buffers_snd, Array(buff_snd))
         ireq += 1
-        GC.@preserve state MPI.Isend(buffers_snd[i],comm,req_all[ireq];dest=rank_snd,tag=EXCHANGE_IMPL_TAG)
+        GC.@preserve state MPI.Isend(buff_snd,comm,req_all[ireq];dest=rank_snd,tag=EXCHANGE_IMPL_TAG)
     end
     @fake_async begin
         @static if isdefined(MPI,:Waitall)
@@ -665,12 +680,6 @@ function exchange_impl!(
             buff_rcv = view(data_rcv.data,ptrs_rcv[i]:(ptrs_rcv[i+1]-1)) #issue
             copyto!(buff_rcv, buffers_rcv[i])
         end
-        # for (i,id_snd) in enumerate(graph.snd.item)
-        #     rank_snd = id_snd-1
-        #     ptrs_snd = data_snd.ptrs
-        #     buff_snd = view(data_snd.data,ptrs_snd[i]:(ptrs_snd[i+1]-1))
-        #     copyto!(buff_snd, buffers_snd[i])
-        # end
         rcv
     end
 end

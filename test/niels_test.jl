@@ -68,10 +68,8 @@ function time(distribute,n,f,nruns,type)
         return ts_in_main
     end
 
-    new_A = deepcopy(A)
-    new_cache = deepcopy(cache)
 
-    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = new_cache
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
     V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
     V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
@@ -80,23 +78,19 @@ function time(distribute,n,f,nruns,type)
     change_sparse = Adapt.adapt(CuArray,change_sparse)
     perm_sparse = Adapt.adapt(CuArray,perm_sparse)
 
-    new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+    cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
 
     # new_cache = cache_to_gpu(new_cache)
-    new_A = Adapt.adapt(CuArray,new_A)
-    new_V = Adapt.adapt(CuArray,deepcopy(V))
+    A = Adapt.adapt(CuArray,A)
+    V = Adapt.adapt(CuArray,V)
 
     t = zeros(nruns)
-    @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    @time PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
-        t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+        t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
     ts_in_main
-    
-    # t1_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    # t2_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    # t3_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
 
     # map(timing)
     # @show A
@@ -124,7 +118,7 @@ function experiment(distribute)
     end
 
     for type in ["cpu","gpu"]
-        for n in [10000,100000,1000000,10000000,100000000,1000000000,10000000000]
+        for n in [10000,100000,1000000,10000000,100000000,1000000000,1000000000]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
