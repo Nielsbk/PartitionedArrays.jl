@@ -6,19 +6,19 @@ using Distances
 using SparseArrays
 using IterativeSolvers
 import Adapt
-# using CUDA
+using CUDA
 using MPI
 using DataFrames
 using JSON3
 
 
-# # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
-# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
-#     size(A)...,
-#     collect(A.colPtr),
-#     collect(A.rowVal),
-#     collect(A.nzVal),
-# )
+# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
+Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+    size(A)...,
+    collect(A.colPtr),
+    collect(A.rowVal),
+    collect(A.nzVal),
+)
 
 
 # function cache_to_gpu(cache)
@@ -68,31 +68,31 @@ function time(distribute,n,f,nruns,type)
         return ts_in_main
     end
 
-    # new_A = deepcopy(A)
-    # new_cache = deepcopy(cache)
+    new_A = deepcopy(A)
+    new_cache = deepcopy(cache)
 
-    # graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = new_cache
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = new_cache
 
-    # V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
-    # V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
-    # perm_snd = Adapt.adapt(CuArray,perm_snd)
-    # change_snd = Adapt.adapt(CuArray,change_snd)
-    # change_sparse = Adapt.adapt(CuArray,change_sparse)
-    # perm_sparse = Adapt.adapt(CuArray,perm_sparse)
+    V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
+    V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
+    perm_snd = Adapt.adapt(CuArray,perm_snd)
+    change_snd = Adapt.adapt(CuArray,change_snd)
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
+    perm_sparse = Adapt.adapt(CuArray,perm_sparse)
 
-    # new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+    new_cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
 
-    # # new_cache = cache_to_gpu(new_cache)
-    # new_A = Adapt.adapt(CuArray,new_A)
-    # new_V = Adapt.adapt(CuArray,deepcopy(V))
+    # new_cache = cache_to_gpu(new_cache)
+    new_A = Adapt.adapt(CuArray,new_A)
+    new_V = Adapt.adapt(CuArray,deepcopy(V))
 
-    # t = zeros(nruns)
-    # @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    # for irun in 1:nruns
-    #     t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    # end
-    # ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-    # ts_in_main
+    t = zeros(nruns)
+    @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    for irun in 1:nruns
+        t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    end
+    ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
+    ts_in_main
     
     # t1_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     # t2_cpu = @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
@@ -121,7 +121,7 @@ function experiment(distribute)
         df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[])
     end
 
-    for type in ["cpu"]
+    for type in ["cpu","gpu"]
         for n in [10000,100000,1000000]
             params = (n,PartitionedArrays.laplacian_fdm,3, type)
             timings = time(distribute,params...)
