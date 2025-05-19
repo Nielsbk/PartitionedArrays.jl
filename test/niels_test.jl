@@ -102,7 +102,7 @@ function time(distribute,n,f,nruns)
 
 end
 
-
+time(distribute,10000,PartitionedArrays.laplacian_fdm,3)
 
 
 function main(distribute)
