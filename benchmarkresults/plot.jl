@@ -134,7 +134,7 @@ function speedup_experiment_nodes()
             )
 
         else
-            plot!(nodes, speedup, label = "Problem size: $n")
+            plot!(nodes_per_dir, speedup, label = "Problem size: $n")
         end
 
     end
