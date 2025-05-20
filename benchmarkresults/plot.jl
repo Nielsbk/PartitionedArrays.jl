@@ -109,5 +109,6 @@ function speedup_experiment_consistent()
     savefig("speedup_consistent_work_plot.png")
 end
 
+speedup_experiment()
 speedup_experiment_consistent()
 
