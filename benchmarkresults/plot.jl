@@ -109,6 +109,40 @@ function speedup_experiment_consistent()
     savefig("speedup_consistent_work_plot.png")
 end
 
+function speedup_experiment_nodes()
+    df = get_dataframe("*nodes.json")
+
+    nodes_per_dir = unique(df.nodes_per_dir)
+
+    for (i,n) in enumerate(unique(df.num_nodes))
+        df_cpu = df[(df.num_nodes .== n) .&& (df.type .== "cpu") , :]
+        df_gpu = df[(df.num_nodes .== n) .&& (df.type .== "gpu") , :]
+        sort(df_gpu,[:nodes_per_dir])
+        sort(df_cpu,[:nodes_per_dir])
+        speedup = df_cpu[!,"median_time"]  ./ df_gpu[!,"median_time"]
+
+        if i == 1
+            plot(
+                nodes_per_dir, speedup,
+                label = "Problem size: $n",
+                xlabel = "Number of Nodes",
+                ylabel = "Speedup",
+                title = " Speedup gpu/cpu vs problem size with different number of nodes",
+                # marker = :circle,
+                linewidth = 2,
+                legend = :outertopright
+            )
+
+        else
+            plot!(nodes, speedup, label = "Problem size: $n")
+        end
+
+    end
+    savefig("speedup_nodes_work_plot.png")
+end
+
+
 speedup_experiment()
 speedup_experiment_consistent()
+speedup_experiment_nodes()
 
