@@ -124,8 +124,8 @@ function speedup_experiment_nodes()
         if i == 1
             plot(
                 nodes_per_dir, speedup,
-                label = "Problem size: $n",
-                xlabel = "Number of Nodes",
+                label = "number of nodes: $n",
+                xlabel = "problem size",
                 ylabel = "Speedup",
                 title = " Speedup gpu/cpu vs problem size with different number of nodes",
                 # marker = :circle,
