@@ -46,7 +46,7 @@ function time(distribute,n,f,nruns,type)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->n,parts_per_dir)
+    nodes_per_dir = map(i->n*size,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -104,7 +104,7 @@ function experiment(distribute)
     nruns = 10
 
     if rank == 0
-        df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[])
+        df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[])
     end
 
     for type in ["cpu","gpu"]
@@ -112,7 +112,7 @@ function experiment(distribute)
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size))
             end
         end
     end
