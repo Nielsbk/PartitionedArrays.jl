@@ -152,28 +152,85 @@ function strong_scaling(files)
         speedup =   base ./ df_gpu[!,"median_time"]
         if i == 1
             plot(
-                num_nodes, speedup,
-                label = "problem size: $n",
+                num_nodes, num_nodes,
+                label = "Ideal",
+                linecolor=:black,
+                linestyle=:dash,
                 xlabel = "workers",
                 ylabel = "Speedup",
                 title = " Strong scaling",
                 linewidth = 2,
                 legend = :outertopright
             )
-
-        else
-            plot!(num_nodes, speedup, label = "Problem size: $n")
         end
-        plot!(num_nodes, num_nodes, label = "Ideal",linecolor=:black,
-     linestyle=:dash,)
+        plot!(num_nodes, speedup, label = "Problem size: $n")
+
     end
     savefig("strong_scaling.png")
     
 end
 
+function strong_scaling(files)
+    df = get_dataframe(files)
+    num_nodes = unique(df.num_nodes)
+    for (i,n) in enumerate(unique(df.nodes_per_dir))
+        df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
+        sort(df_gpu,[:num_nodes])
+        base = df_gpu[!,"median_time"][1]
+
+ 
+        # println(base)
+        speedup =   base ./ df_gpu[!,"median_time"]
+        if i == 1
+            plot(
+                num_nodes, num_nodes,
+                label = "Ideal",
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "workers",
+                ylabel = "Speedup",
+                title = " Strong scaling",
+                linewidth = 2,
+                legend = :outertopright
+            )
+        end
+        plot!(num_nodes, speedup, label = "Problem size: $n")
+        
+    end
+    savefig("strong_scaling.png")
+    
+end
+
+function weak_scaling(files)
+    df = get_dataframe(files)
+    num_nodes = unique(df.num_nodes)
+    for (i,n) in enumerate(unique(df.nodes_per_dir))
+        df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
+        sort(df_gpu,[:num_nodes])
+        base = df_gpu[!,"median_time"][1]
+        speedup =   base ./ df_gpu[!,"median_time"]
+        if i == 1
+            plot(
+                num_nodes, [1.0 for i in num_nodes],
+                label = "Ideal",
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "workers",
+                ylabel = "Speedup",
+                title = " Strong scaling",
+                linewidth = 2,
+                legend = :outertopright
+            )
+        end
+        plot!(num_nodes, speedup, label = "Problem size: $n")
+        
+    end
+    savefig("weak_scaling.png")
+    
+end
 # speedup_experiment()
 # speedup_experiment_consistent()
 # speedup_experiment_nodes()
-# weak_scaling("*per_node.json")
+weak_scaling("*per_node.json")
 strong_scaling("*nodes.json")
 
