@@ -85,22 +85,12 @@ function time(distribute,n,f,nruns,type)
     V = Adapt.adapt(CuArray,V)
 
     t = zeros(nruns)
-    @time PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
         t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
     ts_in_main
-
-    # map(timing)
-    # @show A
-    # if rank == 1
-    #     println("cpu works")
-    # end
-    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
-    
-    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
-    # @time PartitionedArrays.psparse_yung_sheng_gpu!(new_A,new_V,new_cache) |> wait
 
 
 end
@@ -111,14 +101,14 @@ function experiment(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
-    nruns = 5
+    nruns = 10
 
     if rank == 0
         df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[])
     end
 
     for type in ["cpu","gpu"]
-        for n in [10000,100000,1000000,10000000,100000000,200000000]
+        for n in [10000,100000,1000000,10000000,100000000]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
@@ -128,7 +118,7 @@ function experiment(distribute)
     end
 
     if rank == 0
-        filename = "data_$(size)_nodes.json"
+        filename = "data_$(size)_scaling_weak.json"
         open(filename,"w") do io
             JSON3.write(io,Tables.columntable(df))
         end
