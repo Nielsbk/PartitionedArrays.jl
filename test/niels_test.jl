@@ -46,7 +46,7 @@ function time(distribute,n,f,nruns,type)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->n*size,parts_per_dir)
+    nodes_per_dir = map(i->n,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -118,7 +118,7 @@ function experiment(distribute)
     end
 
     if rank == 0
-        filename = "data_$(size)_scaling_weak.json"
+        filename = "data_$(size)_scaling_strong.json"
         open(filename,"w") do io
             JSON3.write(io,Tables.columntable(df))
         end
