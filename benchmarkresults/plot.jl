@@ -45,8 +45,8 @@ function get_dataframe(regex_json)
     return df
 end
 
-function speedup_experiment()
-    df = get_dataframe("*_nodes.json")
+function speedup_experiment(files)
+    df = get_dataframe(files)
 
     nodes = unique(df.num_nodes)
 
@@ -77,8 +77,8 @@ function speedup_experiment()
     savefig("speedup_plot.png")
 end
 
-function speedup_experiment_consistent()
-    df = get_dataframe("*_per_node.json")
+function speedup_experiment_consistent(files)
+    df = get_dataframe(files)
 
     nodes = unique(df.num_nodes)
 
@@ -109,8 +109,8 @@ function speedup_experiment_consistent()
     savefig("speedup_consistent_work_plot.png")
 end
 
-function speedup_experiment_nodes()
-    df = get_dataframe("*nodes.json")
+function speedup_experiment_nodes(files)
+    df = get_dataframe(files)
 
     nodes_per_dir = unique(df.nodes_per_dir)
 
@@ -141,34 +141,6 @@ function speedup_experiment_nodes()
     savefig("speedup_nodes_work_plot.png")
 end
 
-function strong_scaling(files)
-    df = get_dataframe(files)
-    num_nodes = unique(df.num_nodes)
-    for (i,n) in enumerate(unique(df.nodes_per_dir))
-        df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
-        sort(df_gpu,[:num_nodes])
-        base = df_gpu[!,"median_time"][1]
-        # println(base)
-        speedup =   base ./ df_gpu[!,"median_time"]
-        if i == 1
-            plot(
-                num_nodes, num_nodes,
-                label = "Ideal",
-                linecolor=:black,
-                linestyle=:dash,
-                xlabel = "workers",
-                ylabel = "Speedup",
-                title = " Strong scaling",
-                linewidth = 2,
-                legend = :outertopright
-            )
-        end
-        plot!(num_nodes, speedup, label = "Problem size: $n")
-
-    end
-    savefig("strong_scaling.png")
-    
-end
 
 function strong_scaling(files)
     df = get_dataframe(files)
@@ -228,9 +200,9 @@ function weak_scaling(files)
     savefig("weak_scaling.png")
     
 end
-# speedup_experiment()
-# speedup_experiment_consistent()
-# speedup_experiment_nodes()
-weak_scaling("*per_node.json")
-strong_scaling("*nodes.json")
+speedup_experiment("*strong.json")
+speedup_experiment_consistent("*weak.json")
+speedup_experiment_nodes("*strong.json")
+weak_scaling("*weak.json")
+strong_scaling("*strong.json")
 
