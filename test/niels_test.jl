@@ -107,7 +107,7 @@ function experiment(distribute)
         df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[])
     end
 
-    for type in ["cpu","gpu"]
+    for type in ["cpu"]
         for n in [10000,100000,1000000,10000000,100000000]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings = time(distribute,params...)
