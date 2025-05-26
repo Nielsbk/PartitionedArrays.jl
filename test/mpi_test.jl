@@ -1,5 +1,5 @@
 using MPI
-using CUDA
+# using CUDA
 
 MPI.Init()
 comm = MPI.COMM_WORLD
@@ -9,11 +9,12 @@ dst = mod(rank+1, size)
 src = mod(rank-1, size)
 println("rank=$rank, size=$size, dst=$dst, src=$src")
 N = 2
-send_mesg = CuArray{Float64}(undef, N)
-recv_mesg = CuArray{Float64}(undef, N)
 
-CUDA.fill!(send_mesg, Float64(rank))
-CUDA.fill!(recv_mesg, Float64(0))
+send_mesg = Array{Float64}(Float64(rank), N)
+recv_mesg = Array{Float64}(Float64(0), N)
+
+# CUDA.fill!(send_mesg, Float64(rank))
+# CUDA.fill!(recv_mesg, Float64(0))
 
 # println(Array(send_mesg))
 #rreq = MPI.Irecv!(recv_mesg, src,  src+32, comm)
