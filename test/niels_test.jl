@@ -46,7 +46,7 @@ function profile(distribute)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->100000000,parts_per_dir)
+    nodes_per_dir = map(i->1000000000,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
