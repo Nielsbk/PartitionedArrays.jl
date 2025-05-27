@@ -36,6 +36,47 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
 #     return cache
 # end
 
+function profile(distribute)
+
+    comm = MPI.COMM_WORLD
+    rank = MPI.Comm_rank(comm)
+    size = MPI.Comm_size(comm)
+    parts_per_dir = (size,)
+    p = prod(parts_per_dir)
+    ranks = distribute(LinearIndices((p,)))
+    timing = distribute([[] for i in 1:size ])
+
+    nodes_per_dir = map(i->100000000,parts_per_dir)
+    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+
+    _,_,V,_,_ = args
+
+    map(V) do val
+        if rank == 0
+            println(length(val))
+        end
+    end
+    A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
+
+    V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
+    V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
+    perm_snd = Adapt.adapt(CuArray,perm_snd)
+    change_snd = Adapt.adapt(CuArray,change_snd)
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
+    perm_sparse = Adapt.adapt(CuArray,perm_sparse)
+
+    cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+
+    # new_cache = cache_to_gpu(new_cache)
+    A = Adapt.adapt(CuArray,A)
+    V = Adapt.adapt(CuArray,V)
+    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+end
+
+
 function time(distribute,n,f,nruns,type)
 
     comm = MPI.COMM_WORLD
@@ -126,7 +167,7 @@ function experiment(distribute)
 
 end
 
-PartitionedArrays.with_mpi(experiment)
+PartitionedArrays.with_mpi(profile)
 
 
 # function main(distribute)
