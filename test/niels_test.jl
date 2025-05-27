@@ -72,8 +72,10 @@ function profile(distribute)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    println(p)
+    p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    println(p)
 end
 
 
