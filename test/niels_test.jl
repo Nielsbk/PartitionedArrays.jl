@@ -50,7 +50,7 @@ function profile(distribute)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
-
+    V_len = length(V)
     map(V) do val
         if rank == 0
             println(length(val))
@@ -73,9 +73,16 @@ function profile(distribute)
     V = Adapt.adapt(CuArray,V)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    println(p)
+    open("profile.txt", "a") do io
+        println("lenght of V: $V_len")
+        println("---------------------------------------")
+        println(io, p)
+        println("---------------------------------------")
+    end
     p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    println(p)
+    open("profile.txt", "a") do io
+        println(io, p)
+    end
 end
 
 
