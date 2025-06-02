@@ -204,7 +204,11 @@ function time(distribute,n,f,nruns,type)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
-
+    map(V) do val
+        if rank == 0
+            println(length(val))
+        end
+    end
     t = zeros(nruns)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
