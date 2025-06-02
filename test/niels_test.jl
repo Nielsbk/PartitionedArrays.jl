@@ -83,14 +83,19 @@ function profile(distribute)
     parts_per_dir = (size,)
     if size == 1
         parts_per_dir = (1,1,1)
+    end
     if size == 2
         parts_per_dir = (1,1,2)
+    end
     if size == 3
         parts_per_dir = (1,1,3)
+    end
     if size == 4
         parts_per_dir = (1,2,2)
+    end
     if size == 6
         parts_per_dir = (1,2,3)
+    end
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
@@ -143,14 +148,19 @@ function time(distribute,n,f,nruns,type)
     parts_per_dir = (size,)
     if size == 1
         parts_per_dir = (1,1,1)
+    end
     if size == 2
         parts_per_dir = (1,1,2)
+    end
     if size == 3
         parts_per_dir = (1,1,3)
+    end
     if size == 4
         parts_per_dir = (1,2,2)
+    end
     if size == 6
         parts_per_dir = (1,2,3)
+    end
 
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
@@ -206,7 +216,6 @@ function time(distribute,n,f,nruns,type)
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
     ts_in_main, nnz, nrows,ncols
 
-
 end
 
 # function add_to_df(df,timings,n,f,nruns,type)
@@ -245,9 +254,8 @@ function experiment(distribute)
     end
 
 end
-
+end
 PartitionedArrays.with_mpi(experiment)
-
 
 # function main(distribute)
 
@@ -374,4 +382,3 @@ PartitionedArrays.with_mpi(experiment)
 #     # @time PartitionedArrays.psparse_yung_sheng!(new_A, copy_V, new_cache) |> wait
 #     # A,cache = psparse(I,J,V,row_partition,col_partition,split_format=false,reuse=true) |> fetch
 #     # psparse!(A,V,cache) |> wait
-# end
