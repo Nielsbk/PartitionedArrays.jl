@@ -57,7 +57,7 @@ function test_sizes(distribute)
     # check if it fits gpu
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
-    
+
     V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
     V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
     perm_snd = Adapt.adapt(CuArray,perm_snd)
@@ -81,11 +81,21 @@ function profile(distribute)
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
     parts_per_dir = (size,)
+    if size == 1
+        parts_per_dir = (1,1,1)
+    if size == 2
+        parts_per_dir = (1,1,2)
+    if size == 3
+        parts_per_dir = (1,1,3)
+    if size == 4
+        parts_per_dir = (1,2,2)
+    if size == 6
+        parts_per_dir = (1,2,3)
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->1000000000,parts_per_dir)
+    nodes_per_dir = map(i->80,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -131,6 +141,17 @@ function time(distribute,n,f,nruns,type)
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
     parts_per_dir = (size,)
+    if size == 1
+        parts_per_dir = (1,1,1)
+    if size == 2
+        parts_per_dir = (1,1,2)
+    if size == 3
+        parts_per_dir = (1,1,3)
+    if size == 4
+        parts_per_dir = (1,2,2)
+    if size == 6
+        parts_per_dir = (1,2,3)
+
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
@@ -140,6 +161,7 @@ function time(distribute,n,f,nruns,type)
 
     _,_,V,_,_ = args
 
+
     map(V) do val
         if rank == 0
             println(length(val))
@@ -147,6 +169,9 @@ function time(distribute,n,f,nruns,type)
     end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
 
+    nnz = length(V)
+    nrows = A.m
+    ncols = A.n
     if type == "cpu"
         t = zeros(nruns)
         @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
@@ -179,7 +204,7 @@ function time(distribute,n,f,nruns,type)
         t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-    ts_in_main
+    ts_in_main, nnz, nrows,ncols
 
 
 end
@@ -193,21 +218,21 @@ function experiment(distribute)
     nruns = 10
 
     if rank == 0
-        df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[])
+        df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],matrix_size=Tuple[])
     end
 
-    for type in ["cpu"]
-        for n in [10000,100000,1000000,10000000,100000000]
+    for type in ["cpu","gpu"]
+        for n in [20,50,100,200,300]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
-            timings = time(distribute,params...)
+            timings,nnz,nrows,ncols = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,nnz,(nrows,ncols)))
             end
         end
     end
 
     if rank == 0
-        filename = "data_$(size)_scaling_strong.json"
+        filename = "scaling_strong.json"
         open(filename,"w") do io
             JSON3.write(io,Tables.columntable(df))
         end
@@ -215,7 +240,7 @@ function experiment(distribute)
 
 end
 
-PartitionedArrays.with_mpi(test_sizes)
+PartitionedArrays.with_mpi(experiment)
 
 
 # function main(distribute)
