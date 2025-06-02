@@ -178,7 +178,7 @@ function time(distribute,n,f,nruns,type)
         end
     end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
-    nnz = distribute([[length(V)] for i in 1:size ])
+    nnz = length(V)
     if type == "cpu"
         t = zeros(nruns)
         @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
