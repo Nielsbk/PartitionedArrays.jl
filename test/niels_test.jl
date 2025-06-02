@@ -177,7 +177,7 @@ function time(distribute,n,f,nruns,type)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
-    shared_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, 0, MPI.Info())
+    shared_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, 0)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
