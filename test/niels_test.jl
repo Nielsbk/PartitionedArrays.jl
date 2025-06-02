@@ -178,15 +178,15 @@ function time(distribute,n,f,nruns,type)
         end
     end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
-    nnz = length(V)
+
     if type == "cpu"
         t = zeros(nruns)
-        @time PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+        PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
         for irun in 1:nruns
             t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
         end
         ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-        return ts_in_main, PartitionedArrays.gather(map(p->nnz,ranks))
+        return ts_in_main, PartitionedArrays.gather(map(p->length(p),V))
     end
 
 
@@ -211,7 +211,7 @@ function time(distribute,n,f,nruns,type)
         t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-    ts_in_main,PartitionedArrays.gather(map(p->nnz,ranks))
+    ts_in_main,PartitionedArrays.gather(map(p->length(p),V))
 
 end
 
@@ -240,10 +240,10 @@ function experiment(distribute)
             timings,nnz= time(distribute,params...)
             nz = []
             PartitionedArrays.map_main(nnz) do i
-                push!(nz,i[1])
+                push!(nz,i)
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*nz[1]))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1])))
             end
         end
     end
