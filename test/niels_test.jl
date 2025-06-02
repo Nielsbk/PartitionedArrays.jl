@@ -235,7 +235,7 @@ function experiment(distribute)
     end
 
     for type in ["cpu","gpu"]
-        for n in [20,50,100,200,400]
+        for n in [20,50,100,150,200]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz= time(distribute,params...)
             nz = []
