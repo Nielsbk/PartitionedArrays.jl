@@ -54,6 +54,20 @@ function test_sizes(distribute)
             println(length(val))
         end
     end
+    # check if it fits gpu
+    V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
+    V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
+    perm_snd = Adapt.adapt(CuArray,perm_snd)
+    change_snd = Adapt.adapt(CuArray,change_snd)
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
+    perm_sparse = Adapt.adapt(CuArray,perm_sparse)
+
+    cache = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+
+    # new_cache = cache_to_gpu(new_cache)
+    A = Adapt.adapt(CuArray,A)
+    V = Adapt.adapt(CuArray,V)
+
 
 end
 
