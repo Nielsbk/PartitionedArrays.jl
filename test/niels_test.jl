@@ -139,12 +139,49 @@ function profile(distribute)
     end
 end
 
+function calc_parts(size,local_size)
+    parts_per_dir = (size,)
+    parts_per_dir_local = (size,)
+    if size == 1
+        parts_per_dir = (1,1,1)
+    end
+    if size == 2
+        parts_per_dir = (1,1,2)
+    end
+    if size == 3
+        parts_per_dir = (1,1,3)
+    end
+    if size == 4
+        parts_per_dir = (1,2,2)
+    end
+    if size == 6
+        parts_per_dir = (1,2,3)
+    end
 
+    if local_size == 1
+        parts_per_dir_local = (1,1,1)
+    end
+    if local_size == 2
+        parts_per_dir_local = (1,1,2)
+    end
+    if local_size == 3
+        parts_per_dir_local = (1,1,3)
+    end
+    if local_size == 4
+        parts_per_dir_local = (1,2,2)
+    end
+    return Base.broadcast(*, (1, 2, 2), (1, 1, 2))
+end
 function time(distribute,n,f,nruns,type)
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
+    shared_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, 0, MPI.Info())
+
+    # Get the local rank and local size
+    local_size = MPI.Comm_size(shared_comm)
+
     parts_per_dir = (size,)
     if size == 1
         parts_per_dir = (1,1,1)
