@@ -229,7 +229,7 @@ function experiment(distribute,filename)
     end
 
     for type in ["cpu","gpu"]
-        for n in [20,50,100,200,300]
+        for n in [20,50]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,nrows,ncols = time(distribute,params...)
             PartitionedArrays.map_main(timings) do timing
