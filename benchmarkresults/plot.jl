@@ -35,12 +35,16 @@ function get_dataframe(regex_json)
 
     df = vcat(dfs...)
 
-    df.wall_times = wall_times.(df.times)
-
-    df.median_time = median.(df.wall_times)
-    df.std_time = std.(df.wall_times)
-    df.mean_time = mean.(df.wall_times)
-    df.best_time = minimum.(df.wall_times)
+    try
+        df.wall_times = wall_times.(df.times)
+        df.median_time = median.(df.wall_times)
+        df.std_time = std.(df.wall_times)
+        df.mean_time = mean.(df.wall_times)
+        df.best_time = minimum.(df.wall_times)
+    catch e
+        
+    end
+   
 
     return df
 end
@@ -199,6 +203,27 @@ function weak_scaling(files)
     end
     savefig("weak_scaling.png")
     
+end
+
+function perc_wall_time(files)
+    df = get_dataframe(files)
+
+
+    @df df bar(
+    :Cores,
+    [:auxiliary :send_data_preparation :communication :compute],
+    bar_position = :stack,
+    title = "Matrix assembly",
+    xlabel = "CPU cores",
+    ylabel = "Percentage of total wall-clock time (%)",
+    label = ["split_and_compress" "store_recv_data" "split_and_compress" "partition_and_prepare_snd_buf"],
+    legend = :topright,
+    xticks = (1:length(core_counts), string.(core_counts)),
+    xscale = :log10,
+    lw = 0.5,
+    c = [:darkred :steelblue :forestgreen :orange]
+)
+
 end
 speedup_experiment("*strong.json")
 speedup_experiment_consistent("*weak.json")

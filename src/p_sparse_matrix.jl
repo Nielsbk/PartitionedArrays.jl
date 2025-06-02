@@ -1720,11 +1720,11 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
     end
-    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
     tic!(T,barrier=true)
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
+
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
     toc!(T,"partition_and_prepare_snd_buf")
-    tic!(T,barrier=true)
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
@@ -1734,6 +1734,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         toc!(T,"store_recv_data")
         map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
         toc!(T,"split_and_compress")
+        toc!(T,"end")
         A,T
     end
 end
