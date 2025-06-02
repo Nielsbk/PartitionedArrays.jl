@@ -215,7 +215,7 @@ function time(distribute,n,f,nruns,type)
             t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
         end
         ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-        return ts_in_main, PartitionedArrays.gather(map(p->length(p),V))
+        return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
     end
 
 
