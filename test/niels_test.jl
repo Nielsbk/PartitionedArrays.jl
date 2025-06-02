@@ -254,7 +254,6 @@ function experiment(distribute)
     end
 
 end
-end
 PartitionedArrays.with_mpi(experiment)
 
 # function main(distribute)
