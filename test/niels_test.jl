@@ -211,12 +211,12 @@ end
 
 # function add_to_df(df,timings,n,f,nruns,type)
 
-function experiment(distribute,filename)
+function experiment(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
     nruns = 10
-
+    filename="strongscaling.json"
 
     df = DataFrame()
     if rank == 0
@@ -224,7 +224,7 @@ function experiment(distribute,filename)
             json_data = JSON3.read(open(filename, "r"))
             df = DataFrame(json_data)
         catch
-        df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],matrix_size=Tuple[])
+            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],matrix_size=Tuple[])
         end
     end
 
@@ -246,7 +246,7 @@ function experiment(distribute,filename)
 
 end
 
-PartitionedArrays.with_mpi(experiment,"strongscaling.json")
+PartitionedArrays.with_mpi(experiment)
 
 
 # function main(distribute)
@@ -335,13 +335,6 @@ PartitionedArrays.with_mpi(experiment,"strongscaling.json")
 #     # end
 #     # @show PartitionedArrays.local_values(new_A)
 
-
-
-
-
-
-
-
 #     # @assert PartitionedArrays.centralize(PartitionedArrays.local_values(new_A)) == PartitionedArrays.centralize(PartitionedArrays.local_values(A))
 #     # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b
 #     #     println("ites")
@@ -382,6 +375,3 @@ PartitionedArrays.with_mpi(experiment,"strongscaling.json")
 #     # A,cache = psparse(I,J,V,row_partition,col_partition,split_format=false,reuse=true) |> fetch
 #     # psparse!(A,V,cache) |> wait
 # end
-
-# PartitionedArrays.with_mpi(main)
-# PartitionedArrays.with_mpi(time)
