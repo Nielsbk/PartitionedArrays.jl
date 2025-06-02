@@ -157,22 +157,27 @@ function calc_parts(size,local_size)
     if size == 6
         parts_per_dir = (1,2,3)
     end
+    if size == 8
+        parts_per_dir = (2,2,2)
+    end
 
     if local_size == 1
         parts_per_dir_local = (1,1,1)
     end
     if local_size == 2
-        parts_per_dir_local = (1,1,2)
+        parts_per_dir_local = (2,1,1)
     end
     if local_size == 3
-        parts_per_dir_local = (1,1,3)
+        parts_per_dir_local = (3,1,1)
     end
     if local_size == 4
-        parts_per_dir_local = (1,2,2)
+        parts_per_dir_local = (2,2,1)
     end
-    return Base.broadcast(*, (1, 2, 2), (1, 1, 2))
+
+    return parts_per_dir, parts_per_dir_local
 end
 function time(distribute,n,f,nruns,type)
+
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
@@ -181,23 +186,10 @@ function time(distribute,n,f,nruns,type)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
+    num_nodes = size / local_size
 
-    parts_per_dir = (size,)
-    if size == 1
-        parts_per_dir = (1,1,1)
-    end
-    if size == 2
-        parts_per_dir = (1,1,2)
-    end
-    if size == 3
-        parts_per_dir = (1,1,3)
-    end
-    if size == 4
-        parts_per_dir = (1,2,2)
-    end
-    if size == 6
-        parts_per_dir = (1,2,3)
-    end
+    nodes_per_axis, gpus_per_axis = calc_parts(num_nodes,local_size)
+    parts_per_dir = Base.broadcast(*, nodes_per_axis, gpus_per_axis)
 
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
@@ -241,6 +233,7 @@ function time(distribute,n,f,nruns,type)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
+
     map(V) do val
         if rank == 0
             println(length(val))
@@ -252,7 +245,7 @@ function time(distribute,n,f,nruns,type)
         t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-    return ts_in_main, PartitionedArrays.gather(map(p->length(p),V))
+    return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
 end
 
@@ -271,20 +264,20 @@ function experiment(distribute)
             json_data = JSON3.read(open(filename, "r"))
             df = DataFrame(json_data)
         catch
-            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[])
+            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Tuple[],nodes_per_axis=Tuple[],gpus_per_axis=Tuple[])
         end
     end
 
     for type in ["cpu","gpu"]
         for n in [20,50,100,150,200,300,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
-            timings,nnz= time(distribute,params...)
+            timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = []
             PartitionedArrays.map_main(nnz) do i
                 push!(nz,i[1])
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1])))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
     end
