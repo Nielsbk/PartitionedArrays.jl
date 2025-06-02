@@ -36,6 +36,28 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
 #     return cache
 # end
 
+function test_sizes(distribute)
+    comm = MPI.COMM_WORLD
+    rank = MPI.Comm_rank(comm)
+    size = MPI.Comm_size(comm)
+    parts_per_dir = (1,1,1)
+    p = prod(parts_per_dir)
+    ranks = distribute(LinearIndices((p,)))
+
+    nodes_per_dir = map(i->i * 20,parts_per_dir)
+    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
+
+    _,_,V,_,_ = args
+    V_len = length(V)
+    map(V) do val
+        if rank == 0
+            println(length(val))
+        end
+    end
+
+end
+
+
 function profile(distribute)
 
     comm = MPI.COMM_WORLD
@@ -176,7 +198,7 @@ function experiment(distribute)
 
 end
 
-PartitionedArrays.with_mpi(profile)
+PartitionedArrays.with_mpi(test_sizes)
 
 
 # function main(distribute)
