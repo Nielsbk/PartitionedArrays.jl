@@ -211,14 +211,21 @@ end
 
 # function add_to_df(df,timings,n,f,nruns,type)
 
-function experiment(distribute)
+function experiment(distribute,filename)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
     nruns = 10
 
+
+    df = DataFrame()
     if rank == 0
+        try
+            json_data = JSON3.read(open(filename, "r"))
+            df = DataFrame(json_data)
+        catch
         df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],matrix_size=Tuple[])
+        end
     end
 
     for type in ["cpu","gpu"]
@@ -232,7 +239,6 @@ function experiment(distribute)
     end
 
     if rank == 0
-        filename = "scaling_strong.json"
         open(filename,"w") do io
             JSON3.write(io,Tables.columntable(df))
         end
@@ -240,7 +246,7 @@ function experiment(distribute)
 
 end
 
-PartitionedArrays.with_mpi(experiment)
+PartitionedArrays.with_mpi(experiment,"strongscaling.json")
 
 
 # function main(distribute)
