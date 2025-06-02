@@ -212,8 +212,7 @@ function time(distribute,n,f,nruns,type)
         t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
-    A |> PartitionedArrays.centralize
-    return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)), (A.m,A.n)
+    return ts_in_main, PartitionedArrays.gather(map(p->length(p),V))
 
 end
 
@@ -232,20 +231,20 @@ function experiment(distribute)
             json_data = JSON3.read(open(filename, "r"))
             df = DataFrame(json_data)
         catch
-            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],matrix_size=Tuple[])
+            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[])
         end
     end
 
     for type in ["cpu","gpu"]
-        for n in [20,50]
+        for n in [20,50,100,200,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
-            timings,nnz,msize= time(distribute,params...)
+            timings,nnz= time(distribute,params...)
             nz = []
             PartitionedArrays.map_main(nnz) do i
                 push!(nz,i[1])
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),msize))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1])))
             end
         end
     end
