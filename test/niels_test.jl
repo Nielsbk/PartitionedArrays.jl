@@ -240,7 +240,7 @@ function experiment(distribute)
             timings,nnz= time(distribute,params...)
             nz = []
             PartitionedArrays.map_main(nnz) do i
-                push!(nz,i)
+                push!(nz,i[1])
             end
             PartitionedArrays.map_main(timings) do timing
                 push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*nz[1]))
