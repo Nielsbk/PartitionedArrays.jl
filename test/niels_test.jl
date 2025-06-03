@@ -178,7 +178,6 @@ function calc_parts(size,local_size)
 end
 function time(distribute,n,f,nruns,type)
 
-
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
@@ -255,17 +254,21 @@ function experiment(distribute)
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
+    shared_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, 0)
+
+    # Get the local rank and local size
+    local_size = MPI.Comm_size(shared_comm)
     nruns = 10
-    filename="weakscaling_snellius.json"
+    filename="weakscaling_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
     if rank == 0
-        try
-            json_data = JSON3.read(open(filename, "r"))
-            df = DataFrame(json_data)
-        catch
+        # try
+        #     json_data = JSON3.read(open(filename, "r"))
+        #     df = DataFrame(json_data)
+        # catch
             df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Tuple{Int64, Int64, Int64}[],nodes_per_axis=Tuple{Int64, Int64, Int64}[],gpus_per_axis=Tuple{Int64, Int64, Int64}[])
-        end
+        # end
     end
 
     for type in ["cpu","gpu"]
