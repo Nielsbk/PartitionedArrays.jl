@@ -264,7 +264,7 @@ function experiment(distribute)
             json_data = JSON3.read(open(filename, "r"))
             df = DataFrame(json_data)
         catch
-            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Vector{Int64}[],nodes_per_axis=Vector{Int64}[],gpus_per_axis=Vector{Int64}[])
+            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Tuple{Int64, Int64, Int64}[],nodes_per_axis=Tuple{Int64, Int64, Int64}[],gpus_per_axis=Tuple{Int64, Int64, Int64}[])
         end
     end
 
@@ -277,11 +277,11 @@ function experiment(distribute)
                 nz = i
             end
             PartitionedArrays.map_main(timings) do timing
-                println(typeof(nz))
+                println(typeof(nz[1]))
                 println(typeof(parts_per_dir))
                 println(typeof(nodes_per_axis))
                 println(typeof(gpus_per_axis))
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz),parts_per_dir, nodes_per_axis,gpus_per_axis))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
     end
