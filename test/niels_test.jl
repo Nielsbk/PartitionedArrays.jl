@@ -277,6 +277,10 @@ function experiment(distribute)
                 nz = i
             end
             PartitionedArrays.map_main(timings) do timing
+                println(typeof(nz))
+                println(typeof(parts_per_dir))
+                println(typeof(nodes_per_axis))
+                println(typeof(gpus_per_axis))
                 push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
