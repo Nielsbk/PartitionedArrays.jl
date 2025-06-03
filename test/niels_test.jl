@@ -272,7 +272,7 @@ function experiment(distribute)
         for n in [20,50,100,150,200,300,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
-            nz = []
+            nz = Tuple[]
             PartitionedArrays.map_main(nnz) do i
                 push!(nz,i[1])
             end
