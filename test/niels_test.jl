@@ -195,7 +195,7 @@ function time(distribute,n,f,nruns,type)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->n,parts_per_dir)
+    nodes_per_dir = map(i->i*n,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -256,7 +256,7 @@ function experiment(distribute)
     rank = MPI.Comm_rank(comm)
     size = MPI.Comm_size(comm)
     nruns = 10
-    filename="strongscaling.json"
+    filename="weakscaling_snellius.json"
 
     df = DataFrame()
     if rank == 0
@@ -277,10 +277,6 @@ function experiment(distribute)
                 nz = i
             end
             PartitionedArrays.map_main(timings) do timing
-                println(typeof(nz[1]))
-                println(typeof(parts_per_dir))
-                println(typeof(nodes_per_axis))
-                println(typeof(gpus_per_axis))
                 push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
