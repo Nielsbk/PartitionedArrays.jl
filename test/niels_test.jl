@@ -264,7 +264,7 @@ function experiment(distribute)
             json_data = JSON3.read(open(filename, "r"))
             df = DataFrame(json_data)
         catch
-            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Tuple[],nodes_per_axis=Tuple[],gpus_per_axis=Tuple[])
+            df = DataFrame(nodes_per_dir=Int[],sparse_func=String[],nruns=Int[],type=String[], times = PartitionedArrays.JaggedArray{Float64,Int32}[],workers=Int[],nzc=Int[],distribution=Int[],nodes_per_axis=Tuple[],gpus_per_axis=Tuple[])
         end
     end
 
