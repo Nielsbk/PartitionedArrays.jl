@@ -272,12 +272,12 @@ function experiment(distribute)
         for n in [20,50,100,150,200,300,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
-            nz = Tuple[]
+            nz = 0
             PartitionedArrays.map_main(nnz) do i
-                push!(nz,i[1])
+                nz = i
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
     end
