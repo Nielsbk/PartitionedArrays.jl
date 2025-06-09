@@ -98,7 +98,7 @@ function experiment(distribute)
 
 
     dict = PartitionedArrays.statistics(t)
-    map_main(ranks) do part
+    PartitionedArrays.map_main(ranks) do part
         open("times.txt","w") do io
             println(io,dict)
         end
