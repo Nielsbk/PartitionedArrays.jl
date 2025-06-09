@@ -96,7 +96,9 @@ function experiment(distribute)
     A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
     # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
 
-    map_main(parts) do part
+
+    dict = PartitionedArrays.statistics(t)
+    map_main(ranks) do part
         open("times.txt","w") do io
             println(io,dict)
         end
