@@ -66,6 +66,7 @@ function experiment(distribute)
     p = prod(parts_per_dir)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
+    t = PartitionedArrays.PTimer(ranks)
 
     nodes_per_dir = map(i->i*100,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
