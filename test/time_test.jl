@@ -68,7 +68,7 @@ function experiment(distribute)
     timing = distribute([[] for i in 1:size ])
 
     nodes_per_dir = map(i->i*100,parts_per_dir)
-    args = f(nodes_per_dir,parts_per_dir,ranks)
+    args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
     v_len = length(V)
