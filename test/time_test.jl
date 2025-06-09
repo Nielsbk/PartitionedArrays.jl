@@ -10,6 +10,42 @@ using CUDA
 using MPI
 using DataFrames
 using JSON3
+using Statistics
+
+function average_timings(dicts::Vector{Dict{String, NamedTuple{(:min, :max, :avg), Tuple{Float64, Float64, Float64}}}})
+    result = Dict{String, NamedTuple{(:min, :max, :avg), Tuple{Float64, Float64, Float64}}}()
+
+    # Collect all unique keys (phases) from all dicts
+    all_keys = Set{String}()
+    for d in dicts
+        union!(all_keys, keys(d))
+    end
+
+    # For each key, gather values and compute averages
+    for key in all_keys
+        mins = Float64[]
+        maxs = Float64[]
+        avgs = Float64[]
+
+        for d in dicts
+            if haskey(d, key)
+                push!(mins, d[key].min)
+                push!(maxs, d[key].max)
+                push!(avgs, d[key].avg)
+            end
+        end
+
+        if !isempty(mins)
+            result[key] = (
+                min = mean(mins),
+                max = mean(maxs),
+                avg = mean(avgs)
+            )
+        end
+    end
+
+    return result
+end
 
 function calc_parts(size,local_size)
     parts_per_dir = (size,)
@@ -93,11 +129,16 @@ function experiment(distribute)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
-    PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
-    # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
+    dicts = []
+
+    for i in 1:10
+        PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
+        push!(dicts,PartitionedArrays.statistics(t))
+    end
+        # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
 
 
-    dict = PartitionedArrays.statistics(t)
+    dict = average_timings(dicts)
     PartitionedArrays.map_main(ranks) do part
         open("times.txt","w") do io
             println(io,dict)
