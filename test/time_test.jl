@@ -93,7 +93,7 @@ function experiment(distribute)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
-    A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
+    PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
     # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
 
 
