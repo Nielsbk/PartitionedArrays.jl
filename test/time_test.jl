@@ -129,7 +129,7 @@ function experiment(distribute)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
-    dicts = []
+    dicts = Vector{Dict{String, NamedTuple{(:min, :max, :avg), Tuple{Float64, Float64, Float64}}}}[]
 
     for i in 1:10
         PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
