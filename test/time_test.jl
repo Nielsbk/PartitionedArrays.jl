@@ -131,18 +131,18 @@ function experiment(distribute)
     V = Adapt.adapt(CuArray,V)
     dicts = Dict{String, NamedTuple{(:min, :max, :avg), Tuple{Float64, Float64, Float64}}}[]
 
-    for i in 1:10
+    for i in 1:1
         PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
-        push!(dicts,PartitionedArrays.statistics(t))
+        # push!(dicts,PartitionedArrays.statistics(t))
     end
         # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
 
 
-    dict = average_timings(dicts)
-    PartitionedArrays.map_main(ranks) do part
-        open("benchmarkresults/times_$(size)_$(local_size)_snellius.txt","w") do io
-            println(io,dict)
-        end
-    end
+    # dict = average_timings(dicts)
+    # PartitionedArrays.map_main(ranks) do part
+    #     open("benchmarkresults/times_$(size)_$(local_size)_snellius.txt","w") do io
+    #         println(io,dict)
+    #     end
+    # end
 end
 PartitionedArrays.with_mpi(experiment)
