@@ -194,7 +194,7 @@ function time(distribute,n,f,nruns,type)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->i*n,parts_per_dir)
+    nodes_per_dir = map(i->n,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -259,7 +259,7 @@ function experiment(distribute)
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
     nruns = 10
-    filename="weakscaling_$(size)_$(local_size)_snellius.json"
+    filename="strongscaling_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
     if rank == 0
