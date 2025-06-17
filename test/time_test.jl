@@ -85,7 +85,7 @@ function calc_parts(size,local_size)
     return parts_per_dir, parts_per_dir_local
 end
 
-function experiment(distribute)
+function experiment(distribute,n)
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
@@ -104,7 +104,7 @@ function experiment(distribute)
     timing = distribute([[] for i in 1:size ])
     t = PartitionedArrays.PTimer(ranks)
 
-    nodes_per_dir = map(i->i*200,parts_per_dir)
+    nodes_per_dir = map(i->i*n,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -131,18 +131,26 @@ function experiment(distribute)
     V = Adapt.adapt(CuArray,V)
     dicts = Dict{String, NamedTuple{(:min, :max, :avg), Tuple{Float64, Float64, Float64}}}[]
 
-    for i in 1:1
+    PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
+    for i in 1:10
         PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t) |> wait
-        # push!(dicts,PartitionedArrays.statistics(t))
+        push!(dicts,PartitionedArrays.statistics(t))
     end
         # A,t = PartitionedArrays.psparse_yung_sheng_gpu_time!(A,V,cache,t)
 
 
-    # dict = average_timings(dicts)
-    # PartitionedArrays.map_main(ranks) do part
-    #     open("benchmarkresults/times_$(size)_$(local_size)_snellius.txt","w") do io
-    #         println(io,dict)
-    #     end
-    # end
+    dict = average_timings(dicts)
+    PartitionedArrays.map_main(ranks) do part
+        open("benchmarkresults/times_$(size)_$(n)_snellius.txt","w") do io
+            println(io,dict)
+        end
+    end
 end
+function experiment(distribute)
+
+    for n in [20,50,200]
+        experiment(distribute,n)
+    end
+end
+
 PartitionedArrays.with_mpi(experiment)
