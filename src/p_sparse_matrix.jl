@@ -1715,7 +1715,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
 
-        CUDA.@profile sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
+        sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
     end
