@@ -1723,7 +1723,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
         # tic!(T,barrier=false)
-        perm_partition!(V, change_index)
+        CUDA.@sync perm_partition!(V, change_index)
         # toc!(T,"perm")
 
         is_own = firstindex(V):n_own_data
@@ -1734,9 +1734,9 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         perm_ghost = view(perm, is_ghost)
 
         # toc!(T,"views")
-        sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
+        CUDA.@sync sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         # toc!(T,"sparse_own")
-        sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+        CUDA.@sync sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         # toc!(T,"sparse_ghost")
         return
     end
