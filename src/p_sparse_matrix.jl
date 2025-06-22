@@ -1711,14 +1711,14 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = @view V[snd_index]
         V_snd_data = V_snd.data
-        V_snd_data[perm] .= V_raw_snd_data
+        CUDA.@sync V_snd_data[perm] .= V_raw_snd_data
     end
 
     function store_recv_data!(V, n_hold_data, V_rcv)
         n_data = n_hold_data + length(V_rcv.data)
         resize!(V, n_data)
         rcv_index = (n_hold_data+1):n_data
-        V[rcv_index] = V_rcv.data
+        CUDA.@sync V[rcv_index] = V_rcv.data
         return
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
