@@ -1707,23 +1707,23 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     end
 
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        CUDA.@sync perm_partition!(V, change_index)
+        CUDA.@sync blocking=true perm_partition!(V, change_index)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = @view V[snd_index]
         V_snd_data = V_snd.data
-        CUDA.@sync V_snd_data[perm] .= V_raw_snd_data
+        CUDA.@sync blocking=true V_snd_data[perm] .= V_raw_snd_data
     end
 
     function store_recv_data!(V, n_hold_data, V_rcv)
         n_data = n_hold_data + length(V_rcv.data)
         resize!(V, n_data)
         rcv_index = (n_hold_data+1):n_data
-        CUDA.@sync V[rcv_index] = V_rcv.data
+        CUDA.@sync blocking=true V[rcv_index] = V_rcv.data
         return
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
         # tic!(T,barrier=false)
-        CUDA.@sync perm_partition!(V, change_index)
+        CUDA.@sync blocking=true perm_partition!(V, change_index)
         # toc!(T,"perm")
 
         is_own = firstindex(V):n_own_data
@@ -1734,9 +1734,9 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         perm_ghost = view(perm, is_ghost)
 
         # toc!(T,"views")
-        CUDA.@sync sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
+        CUDA.@sync blocking=true sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
         # toc!(T,"sparse_own")
-        CUDA.@sync sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+        CUDA.@sync blocking=true sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         # toc!(T,"sparse_ghost")
         return
     end
@@ -1748,7 +1748,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
-        CUDA.@sync fetch(t_V)
+        CUDA.@sync blocking=true fetch(t_V) |> wait
         toc!(T,"exchange")
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
         toc!(T,"store_recv_data")

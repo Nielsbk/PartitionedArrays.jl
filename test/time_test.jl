@@ -141,7 +141,7 @@ function experiment(distribute,n)
 
     dict = average_timings(dicts)
     PartitionedArrays.map_main(ranks) do part
-        open("benchmarkresults/times_$(size)_$(n)_snellius.txt","w") do io
+        open("benchmarkresults/sync_times_$(size)_$(n)_snellius.txt","w") do io
             println(io,dict)
         end
     end
