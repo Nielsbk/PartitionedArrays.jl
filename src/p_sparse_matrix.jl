@@ -1748,11 +1748,11 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
-        CUDA.@sync fetch(t_V)
+        fetch(t_V)
         toc!(T,"exchange")
-        map(CUDA.@sync store_recv_data!, V, hold_data_size, V_rcv_buf)
+        map(store_recv_data!, V, hold_data_size, V_rcv_buf)
         toc!(T,"store_recv_data")
-        map(CUDA.@sync split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
+        map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
         toc!(T,"split_and_compress")
         A,T
     end
