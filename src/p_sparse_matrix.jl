@@ -1707,7 +1707,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     end
 
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        perm_partition!(V, change_index)
+        CUDA.@sync perm_partition!(V, change_index)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = @view V[snd_index]
         V_snd_data = V_snd.data
@@ -1722,9 +1722,9 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         return
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
-        tic!(T,barrier=false)
+        # tic!(T,barrier=false)
         perm_partition!(V, change_index)
-        toc!(T,"perm")
+        # toc!(T,"perm")
 
         is_own = firstindex(V):n_own_data
         is_ghost = (n_own_data+1):lastindex(V)
@@ -1733,17 +1733,17 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         perm_own = view(perm, is_own)
         perm_ghost = view(perm, is_ghost)
 
-        toc!(T,"views")
+        # toc!(T,"views")
         sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
-        toc!(T,"sparse_own")
+        # toc!(T,"sparse_own")
         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
-        toc!(T,"sparse_ghost")
+        # toc!(T,"sparse_ghost")
         return
     end
     tic!(T,barrier=true)
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
-    map(CUDA.@sync partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
+    map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
     toc!(T,"partition_and_prepare_snd_buf")
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
