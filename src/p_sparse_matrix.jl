@@ -1748,7 +1748,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
-        fetch(t_V)
+        CUDA.@sync fetch(t_V)
         toc!(T,"exchange")
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
         toc!(T,"store_recv_data")
