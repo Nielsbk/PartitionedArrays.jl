@@ -289,7 +289,7 @@ function experiment(distribute)
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
     nruns = 10
-    filename="strongscaling_$(size)_$(local_size)_snellius.json"
+    filename="strongscaling_sync_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
     if rank == 0
