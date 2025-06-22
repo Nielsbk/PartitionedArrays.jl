@@ -1743,17 +1743,17 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
     tic!(T,barrier=true)
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
-    map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
-    # toc!(T,"partition_and_prepare_snd_buf")
+    map(CUDA.@sync partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
+    toc!(T,"partition_and_prepare_snd_buf")
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
-        fetch(t_V)
-        # toc!(T,"exchange")
-        map(store_recv_data!, V, hold_data_size, V_rcv_buf)
-        # toc!(T,"store_recv_data")
-        map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
-        # toc!(T,"split_and_compress")
+        CUDA.@sync fetch(t_V)
+        toc!(T,"exchange")
+        map(CUDA.@sync store_recv_data!, V, hold_data_size, V_rcv_buf)
+        toc!(T,"store_recv_data")
+        map(CUDA.@sync split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
+        toc!(T,"split_and_compress")
         A,T
     end
 end
