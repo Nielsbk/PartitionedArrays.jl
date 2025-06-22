@@ -76,6 +76,32 @@ end
 
 
 function profile(distribute)
+    function sparse_matrix!(A, V, K; reset=true)
+        if reset
+            CUDA.fill!(A.nzVal, 0)  # Reset nonzero values on GPU
+        end
+        
+        function kernel_update!(A_nz, V, K, N)
+            i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+            if i ≤ N && K[i] > 0 && i > 0
+                CUDA.@atomic A_nz[K[i]] += V[i]  # Update nonzero elements
+            end
+            return
+        end
+    
+        A_nz = A.nzVal  # Get the nonzero values array
+        N = length(V)
+        if N == 0
+            println("empty sparse_matrix warning")
+            return A
+        end
+        threads = 256
+        blocks = cld(N, threads)
+    
+        CUDA.@cuda threads=threads blocks=blocks kernel_update!(A_nz, V, K, N)
+    
+        return A
+    end
 
     comm = MPI.COMM_WORLD
     rank = MPI.Comm_rank(comm)
@@ -125,18 +151,22 @@ function profile(distribute)
     # new_cache = cache_to_gpu(new_cache)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
-    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    open("profile.txt", "a") do io
-        println("lenght of V: $V_len")
-        println("---------------------------------------")
-        println(io, p)
-        println("---------------------------------------")
-    end
-    p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    open("profile.txt", "a") do io
-        println(io, p)
-    end
+
+    # map(sparse_matrix!(A,V,K))
+    # PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+
+    
+    # p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    # open("profile.txt", "a") do io
+    #     println("lenght of V: $V_len")
+    #     println("---------------------------------------")
+    #     println(io, p)
+    #     println("---------------------------------------")
+    # end
+    # p = CUDA.@profile PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    # open("profile.txt", "a") do io
+    #     println(io, p)
+    # end
 end
 
 function calc_parts(size,local_size)
@@ -241,7 +271,7 @@ function time(distribute,n,f,nruns,type)
     t = zeros(nruns)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
-        t[irun] =  @elapsed PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+        t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
