@@ -19,7 +19,7 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
 end
 
 # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
-Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC{float64,int64}(
     size(A)...,
     collect(A.colPtr),
     collect(A.rowVal),
