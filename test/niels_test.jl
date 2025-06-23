@@ -286,11 +286,15 @@ function time(distribute,n,f,nruns,type)
 
     A = Adapt.adapt(Array,A)
 
-    try 
-        @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
-        println("passed with size $(n)")
-    catch
-        println("failed with size $(n)")
+    if rank == 0
+        try 
+            @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
+            println("passed with size $(n)")
+            println(CUDA.pool_status())
+        catch
+            println("failed with size $(n)")
+            println(CUDA.pool_status())
+        end
     end
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
