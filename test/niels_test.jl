@@ -7,7 +7,6 @@ using SparseArrays
 using IterativeSolvers
 import Adapt
 using CUDA
-using CUDA.Cus
 using MPI
 using DataFrames
 using JSON3
