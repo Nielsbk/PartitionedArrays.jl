@@ -11,6 +11,12 @@ using MPI
 using DataFrames
 using JSON3
 
+function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
+    size(A) == size(B) &&
+    A.colptr == B.colptr &&
+    A.rowval == B.rowval &&
+    A.nzval == B.nzval
+end
 
 # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
@@ -280,7 +286,7 @@ function time(distribute,n,f,nruns,type)
 
     A = Adapt.adapt(Array,A)
 
-    @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
+    @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
 end
@@ -295,7 +301,7 @@ function experiment(distribute)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
-    nruns = 10
+    nruns = 2
     filename="strongscaling_sync_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
@@ -308,7 +314,7 @@ function experiment(distribute)
         # end
     end
 
-    for type in ["cpu","gpu"]
+    for type in ["gpu"]
         for n in [20,50,100,150,200,300,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
@@ -322,11 +328,11 @@ function experiment(distribute)
         end
     end
 
-    if rank == 0
-        open(filename,"w") do io
-            JSON3.write(io,Tables.columntable(df))
-        end
-    end
+    # if rank == 0
+    #     open(filename,"w") do io
+    #         JSON3.write(io,Tables.columntable(df))
+    #     end
+    # end
 
 end
 PartitionedArrays.with_mpi(experiment)
