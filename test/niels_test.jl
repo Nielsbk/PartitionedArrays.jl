@@ -272,11 +272,12 @@ function time(distribute,n,f,nruns,type)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
 
-    # map(V) do val
-    #     if rank == 0
-    #         println(length(val))
-    #     end
-    # end
+    map(V) do val
+        if rank == 0
+            println(typeof(A_test))
+            println(typeof(A))
+        end
+    end
     t = zeros(nruns)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
@@ -289,7 +290,8 @@ function time(distribute,n,f,nruns,type)
     if rank == 0
         try 
             CUDA.pool_status()
-            @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
+            println
+            @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A_test))
             println("passed with size $(n)")
         catch
             println("failed with size $(n)")
