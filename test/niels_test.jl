@@ -26,6 +26,13 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
     collect(A.nzVal),
 )
 
+Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CUDA.CuSparseMatrixCSC(
+    size(A)...,
+    CuArray(Int64.(A.colptr)),
+    CuArray(Int64.(A.rowval)),
+    CuArray(A.nzval),
+)
+
 
 # function cache_to_gpu(cache)
 
