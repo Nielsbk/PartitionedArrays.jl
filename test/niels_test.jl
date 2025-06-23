@@ -18,12 +18,14 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
     A.nzval == B.nzval
 end
 
+# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
     size(A)...,
-    Int.(A.colPtr),
-    Int.(A.rowVal),
+    convert(Vector{Int}, collect(A.colPtr)),
+    convert(Vector{Int}, collect(A.rowVal)),
     collect(A.nzVal),
 )
+
 
 # function cache_to_gpu(cache)
 
@@ -287,7 +289,6 @@ function time(distribute,n,f,nruns,type)
     if rank == 0
         try 
             CUDA.pool_status()
-            # println(typeof(PartitionedArrays.centralize(A)))
             @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
             println("passed with size $(n)")
         catch
