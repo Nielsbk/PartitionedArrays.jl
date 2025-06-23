@@ -12,4 +12,5 @@ export OMP_NUM_THREADS=1
 export NUM_THREADS=1
 MPIFLAGS="--map-by node:span --rank-by core"
 JULIAFLAGS="-O3 --check-bounds=no"
-mpiexec -np 4 $MPIFLAGS julia $JULIAFLAGS --project=. niels_test.jl
+mpiexec -np 2 $MPIFLAGS julia $JULIAFLAGS --project=. mpi_test.jl
+mpiexec -np 2 $MPIFLAGS julia  --project=. test/mpi_test.jl
