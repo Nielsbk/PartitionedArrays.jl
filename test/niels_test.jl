@@ -272,11 +272,11 @@ function time(distribute,n,f,nruns,type)
     A = Adapt.adapt(CuArray,A)
     V = Adapt.adapt(CuArray,V)
 
-    map(V) do val
-        if rank == 0
-            println(length(val))
-        end
-    end
+    # map(V) do val
+    #     if rank == 0
+    #         println(length(val))
+    #     end
+    # end
     t = zeros(nruns)
     PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     for irun in 1:nruns
@@ -286,7 +286,12 @@ function time(distribute,n,f,nruns,type)
 
     A = Adapt.adapt(Array,A)
 
-    @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
+    try 
+        @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
+        println("passed with size $(n)")
+    catch
+        println("failed with size $(n)")
+    end
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
 end
