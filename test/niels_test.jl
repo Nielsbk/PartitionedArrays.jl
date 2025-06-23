@@ -340,7 +340,7 @@ function experiment(distribute)
                 nz = i
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
+                push!(df,(n,"linear_elasticity_fem",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
     end
