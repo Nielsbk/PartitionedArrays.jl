@@ -247,6 +247,9 @@ function time(distribute,n,f,nruns,type)
         return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
     end
 
+    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    A_test = deepcopy(A)
+    cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
@@ -274,6 +277,10 @@ function time(distribute,n,f,nruns,type)
         t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
+
+    A = Adapt.adapt(Array,A)
+
+    @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
 end
