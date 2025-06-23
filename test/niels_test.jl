@@ -288,12 +288,11 @@ function time(distribute,n,f,nruns,type)
 
     if rank == 0
         try 
+            CUDA.pool_status()
             @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A))
             println("passed with size $(n)")
-            println(CUDA.pool_status())
         catch
             println("failed with size $(n)")
-            println(CUDA.pool_status())
         end
     end
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
