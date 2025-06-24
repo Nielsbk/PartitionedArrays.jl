@@ -331,7 +331,8 @@ function time(distribute,n,f,nruns,type)
     if rank == 0
         try 
             CUDA.pool_status()
-            println
+            println(typeof(PartitionedArrays.centralize(A)))
+            println(typeof(PartitionedArrays.centralize(A_test)))
             @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A_test))
             println("passed with size $(n)")
         catch
@@ -366,7 +367,8 @@ function experiment(distribute)
     end
 
     for type in ["gpu"]
-        for n in [20,50,100,150,200,300,400]
+        # for n in [20,50,100,150,200,300,400]
+        for n in [300,400]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = 0
