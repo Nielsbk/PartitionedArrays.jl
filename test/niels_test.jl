@@ -328,6 +328,10 @@ function time(distribute,n,f,nruns,type)
 
     A = Adapt.adapt(Array,A)
 
+
+    map(PartitionedArrays.local_values(A_test),PartitionedArrays.local_values(A)) do a,b
+        @assert a == b
+    end
     if rank == 0
         println(typeof(A))
         println(typeof(A_test))
