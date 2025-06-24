@@ -15,9 +15,9 @@ using JSON3
 struct CuCSCMatrix64
     m::Int                # number of rows
     n::Int                # number of columns
-    colPtr::CuArray{Int64}
-    rowVal::CuArray{Int64}
-    nzVal::CuArray{Float64}
+    colptr::CuArray{Int64}
+    rowval::CuArray{Int64}
+    nzval::CuArray{Float64}
 end
 
 function CuCSCMatrix64(A::SparseMatrixCSC{Float64, Int64})
