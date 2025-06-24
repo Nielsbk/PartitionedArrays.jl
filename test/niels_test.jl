@@ -37,6 +37,7 @@ Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CuCSCMatrix64(
     CuArray(A.rowval),
     CuArray(A.nzval),
 )
+Base.size(A::CuCSCMatrix64) = (A.m, A.n)
 
 function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
     size(A) == size(B) &&
