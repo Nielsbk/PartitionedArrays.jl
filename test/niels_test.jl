@@ -329,8 +329,8 @@ function time(distribute,n,f,nruns,type)
     A = Adapt.adapt(Array,A)
 
     if rank == 0
-        println(typeof(PartitionedArrays.centralize(A)))
-        println(typeof(PartitionedArrays.centralize(A_test)))
+        println(typeof(A))
+        println(typeof(A_test))
         try 
             CUDA.pool_status()
 
