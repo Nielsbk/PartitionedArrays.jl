@@ -33,9 +33,9 @@ end
 Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CuCSCMatrix64(
     A.m,
     A.n,
-    CuArray(A.colPtr),
-    CuArray(A.rowVal),
-    CuArray(A.nzVal),
+    CuArray(A.colptr),
+    CuArray(A.rowval),
+    CuArray(A.nzval),
 )
 
 function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
@@ -54,9 +54,9 @@ end
 # )
 Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
     size(A)...,
-    convert(Vector{Int64}, collect(A.colPtr)),
-    convert(Vector{Int64}, collect(A.rowVal)),
-    collect(A.nzVal),
+    convert(Vector{Int64}, collect(A.colptr)),
+    convert(Vector{Int64}, collect(A.rowval)),
+    collect(A.nzval),
 )
 
 # Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CUDA.CUSPARSE.CudaSparseMatrixCSC(
