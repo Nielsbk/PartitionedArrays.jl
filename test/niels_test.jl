@@ -11,6 +11,33 @@ using MPI
 using DataFrames
 using JSON3
 
+
+struct CuCSCMatrix64
+    m::Int                # number of rows
+    n::Int                # number of columns
+    colPtr::CuArray{Int64}
+    rowVal::CuArray{Int64}
+    nzVal::CuArray{Float64}
+end
+
+function CuCSCMatrix64(A::SparseMatrixCSC{Float64, Int64})
+    CuCSCMatrix64(
+        size(A, 1),
+        size(A, 2),
+        CuArray(Int64.(A.colPtr)),
+        CuArray(Int64.(A.rowVal)),
+        CuArray(A.nzVal)
+    )
+end
+
+Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CuCSCMatrix64(
+    A.m,
+    A.n,
+    CuArray(A.colPtr),
+    CuArray(A.rowVal),
+    CuArray(A.nzVal),
+)
+
 function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
     size(A) == size(B) &&
     A.colptr == B.colptr &&
@@ -19,10 +46,16 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
 end
 
 # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
-Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+#     size(A)...,
+#     convert(Vector{Int}, collect(A.colPtr)),
+#     convert(Vector{Int}, collect(A.rowVal)),
+#     collect(A.nzVal),
+# )
+Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
     size(A)...,
-    convert(Vector{Int}, collect(A.colPtr)),
-    convert(Vector{Int}, collect(A.rowVal)),
+    convert(Vector{Int64}, collect(A.colPtr)),
+    convert(Vector{Int64}, collect(A.rowVal)),
     collect(A.nzVal),
 )
 
