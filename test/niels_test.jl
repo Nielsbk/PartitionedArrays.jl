@@ -15,9 +15,9 @@ using JSON3
 struct CuCSCMatrix64
     m::Int                # number of rows
     n::Int                # number of columns
-    colptr::CuArray{Int64}
-    rowval::CuArray{Int64}
-    nzval::CuArray{Float64}
+    colPtr::CuArray{Int64}
+    rowVal::CuArray{Int64}
+    nzVal::CuArray{Float64}
 end
 
 function CuCSCMatrix64(A::SparseMatrixCSC{Float64, Int64})
@@ -55,9 +55,9 @@ end
 # )
 Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
     size(A)...,
-    convert(Vector{Int64}, collect(A.colptr)),
-    convert(Vector{Int64}, collect(A.rowval)),
-    collect(A.nzval),
+    convert(Vector{Int64}, collect(A.colPtr)),
+    convert(Vector{Int64}, collect(A.rowVal)),
+    collect(A.nzVal),
 )
 
 # Adapt.adapt_structure(::Type{CuArray}, A::SparseMatrixCSC) = CUDA.CUSPARSE.CudaSparseMatrixCSC(
