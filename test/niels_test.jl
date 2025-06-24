@@ -24,9 +24,9 @@ function CuCSCMatrix64(A::SparseMatrixCSC{Float64, Int64})
     CuCSCMatrix64(
         size(A, 1),
         size(A, 2),
-        CuArray(Int64.(A.colPtr)),
-        CuArray(Int64.(A.rowVal)),
-        CuArray(A.nzVal)
+        CuArray(Int64.(A.colvtr)),
+        CuArray(Int64.(A.rowval)),
+        CuArray(A.nzval)
     )
 end
 
