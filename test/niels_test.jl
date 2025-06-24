@@ -335,8 +335,6 @@ function time(distribute,n,f,nruns,type)
     if rank == 0
         println(typeof(A))
         println(typeof(A_test))
-        PartitionedArrays.centralize(A)
-        println(typeof(A))
         try 
             CUDA.pool_status()
 
