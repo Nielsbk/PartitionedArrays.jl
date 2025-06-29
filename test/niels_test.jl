@@ -346,7 +346,7 @@ function time(distribute,n,f,nruns,type)
     # end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
 
-    A = Adapt.adapt(Array,A)
+    # A = Adapt.adapt(Array,A)
 
 
     # map(PartitionedArrays.local_values(A_test),PartitionedArrays.local_values(A)) do a,b
