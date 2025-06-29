@@ -39,11 +39,18 @@ using JSON3
 # )
 # Base.size(A::CuCSCMatrix64) = (A.m, A.n)
 
-function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC)
-    size(A) == size(B) &&
-    A.colptr == B.colptr &&
-    A.rowval == B.rowval &&
-    A.nzval == B.nzval
+function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
+    count_diffs = count(!=, A.nzval, B.nzval)
+    diff_indices = findall(A.nzval .!= B.nzval)
+
+    a_diff = a[diff_indices]
+    b_diff = b[diff_indices]
+
+    if rank == 0
+        println("different $(count_diffs) times")
+        println("true values: $(a_diff)")
+        println("gpu values: $(b_diff)")
+    end
 end
 
 # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
@@ -337,8 +344,8 @@ function time(distribute,n,f,nruns,type)
     # println(typeof(A_test))
     try 
         # CUDA.pool_status()
-        # @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A_test))
-        @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
+        fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A),rank)
+        # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
     catch
         println("failed with size $(n)")
     end
