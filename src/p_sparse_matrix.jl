@@ -1571,10 +1571,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     function perm_partition!(V, perm)
         N = length(V)
         threads = 256
-        if N > 0
+        # if N > 0
             blocks = cld(N, threads)
             CUDA.@sync CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
-        end
+        # end
     end
     function sparse_matrix!(A, V, K; reset=true)
         if reset
