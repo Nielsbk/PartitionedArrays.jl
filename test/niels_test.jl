@@ -378,7 +378,7 @@ function experiment(distribute)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
-    nruns = 20
+    nruns = 1
     filename="strongscaling_sync2_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
@@ -393,7 +393,7 @@ function experiment(distribute)
 
     for type in ["cpu","gpu"]
         # for n in [20,50,100,150,200,250]
-        for n in [20,50]
+        for n in [50]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = 0
