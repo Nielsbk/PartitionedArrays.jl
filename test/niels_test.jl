@@ -40,7 +40,7 @@ using JSON3
 # Base.size(A::CuCSCMatrix64) = (A.m, A.n)
 
 function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
-    diff_mask = a .!= b
+    diff_mask = A.nzval .!= B.nzval
     count_diffs = count(diff_mask)
     diff_indices = findall(A.nzval .!= B.nzval)
 
