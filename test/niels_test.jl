@@ -341,9 +341,9 @@ function time(distribute,n,f,nruns,type)
     CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     A_gpu = Adapt.adapt(Array,A)
 
-    for irun in 1:nruns
-        t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    end
+    # for irun in 1:nruns
+    #     t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    # end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
 
     A = Adapt.adapt(Array,A)
