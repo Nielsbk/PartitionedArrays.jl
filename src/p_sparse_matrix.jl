@@ -1722,38 +1722,38 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         return
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
-        # tic!(T,barrier=false)
+        tic!(T,barrier=false)
         CUDA.@sync blocking=true perm_partition!(V, change_index)
-        # toc!(T,"perm")
-
-        is_own = firstindex(V):n_own_data
-        is_ghost = (n_own_data+1):lastindex(V)
-        V_own_own = view(V, is_own)
-        V_own_ghost = view(V, is_ghost)
-        perm_own = view(perm, is_own)
-        perm_ghost = view(perm, is_ghost)
-
-        # toc!(T,"views")
+        toc!(T,"perm")
+        CUDA.@sync blocking=true
+            is_own = firstindex(V):n_own_data
+            is_ghost = (n_own_data+1):lastindex(V)
+            V_own_own = view(V, is_own)
+            V_own_ghost = view(V, is_ghost)
+            perm_own = view(perm, is_own)
+            perm_ghost = view(perm, is_ghost)
+        end 
+        toc!(T,"views")
         CUDA.@sync blocking=true sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
-        # toc!(T,"sparse_own")
+        toc!(T,"sparse_own")
         CUDA.@sync blocking=true sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
-        # toc!(T,"sparse_ghost")
+        toc!(T,"sparse_ghost")
         return
     end
-    tic!(T,barrier=true)
+    # tic!(T,barrier=true)
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
-    toc!(T,"partition_and_prepare_snd_buf")
+    # toc!(T,"partition_and_prepare_snd_buf")
     t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
         CUDA.@sync blocking=true fetch(t_V)
-        toc!(T,"exchange")
+        # toc!(T,"exchange")
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
-        toc!(T,"store_recv_data")
+        # toc!(T,"store_recv_data")
         map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
-        toc!(T,"split_and_compress")
+        # toc!(T,"split_and_compress")
         A,T
     end
 end

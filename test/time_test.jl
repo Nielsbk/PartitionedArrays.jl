@@ -104,7 +104,7 @@ function experiment(distribute,n)
     timing = distribute([[] for i in 1:size ])
     t = PartitionedArrays.PTimer(ranks)
 
-    nodes_per_dir = map(i->i*n,parts_per_dir)
+    nodes_per_dir = map(i->n,parts_per_dir)
     args = PartitionedArrays.laplacian_fdm(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args
@@ -141,14 +141,14 @@ function experiment(distribute,n)
 
     dict = average_timings(dicts)
     PartitionedArrays.map_main(ranks) do part
-        open("benchmarkresults/sync_times_$(size)_$(n)_snellius.txt","w") do io
+        open("benchmarkresults/sync_split_strong_times_$(size)_$(n)_snellius.txt","w") do io
             println(io,dict)
         end
     end
 end
 function experiment(distribute)
 
-    for n in [20,50,200]
+    for n in [20,50,100,200]
         experiment(distribute,n)
     end
 end
