@@ -49,8 +49,10 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
 
     if rank == 0
         println("different $(count_diffs) times")
+        println("error percentage of $(count_diffs/length(A.nzval)) ")
         println("true values: $(a_diff)")
         println("gpu values: $(b_diff)")
+
     end
 end
 
