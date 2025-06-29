@@ -1610,7 +1610,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     function kernel_perm_partition!(V,perm)
         t = (blockIdx().x - 1) * blockDim().x + threadIdx().x
         if t == 1
-            for idx in 1:length(swaps)
+            for idx in 1:length(perm)
                 i, j = perm[idx]
                 tmp = V[i]
                 V[1] = V[j]
