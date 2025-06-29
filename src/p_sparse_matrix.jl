@@ -1725,7 +1725,7 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         tic!(T,barrier=false)
         CUDA.@sync blocking=true perm_partition!(V, change_index)
         toc!(T,"perm")
-        CUDA.@sync blocking=true
+        CUDA.@sync blocking=true begin
             is_own = firstindex(V):n_own_data
             is_ghost = (n_own_data+1):lastindex(V)
             V_own_own = view(V, is_own)
