@@ -338,11 +338,9 @@ function time(distribute,n,f,nruns,type)
     # println(typeof(A))
     # println(typeof(A_test))
     try 
-        CUDA.pool_status()
-
+        # CUDA.pool_status()
         # @test fast_sparse_eq(PartitionedArrays.centralize(A), PartitionedArrays.centralize(A_test))
         @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
-        println("passed with size $(n)")
     catch
         println("failed with size $(n)")
     end
