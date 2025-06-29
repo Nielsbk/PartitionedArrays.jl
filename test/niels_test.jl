@@ -56,13 +56,20 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     end
 end
 
-# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
     size(A)...,
-    convert(Vector{Int}, collect(A.colPtr)),
-    convert(Vector{Int}, collect(A.rowVal)),
+    collect(A.colPtr),
+    collect(A.rowVal),
     collect(A.nzVal),
 )
+
+# # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
+# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+#     size(A)...,
+#     convert(Vector{Int}, collect(A.colPtr)),
+#     convert(Vector{Int}, collect(A.rowVal)),
+#     collect(A.nzVal),
+# )
 # Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
 #     size(A)...,
 #     convert(Vector{Int64}, collect(A.colPtr)),
@@ -382,7 +389,7 @@ function experiment(distribute)
     end
 
     for type in ["cpu","gpu"]
-        for n in [20,50,100,150,200,250,300]
+        for n in [20,50,100,150,200,250]
         # for n in [2,5]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
