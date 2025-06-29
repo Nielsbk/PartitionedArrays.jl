@@ -44,8 +44,8 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     count_diffs = count(diff_mask)
     diff_indices = findall(A.nzval .!= B.nzval)
 
-    a_diff = a[diff_indices]
-    b_diff = b[diff_indices]
+    a_diff = A.nzval[diff_indices]
+    b_diff = B.nzval[diff_indices]
 
     if rank == 0
         println("different $(count_diffs) times")
