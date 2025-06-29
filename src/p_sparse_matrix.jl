@@ -1589,21 +1589,26 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         
         function kernel_update!(A_nz, V, K, N)
             i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-            if i ≤ N && K[i] > 0 && i > 0
-                CUDA.@atomic A_nz[K[i]] += V[i]  # Update nonzero elements
+            if i == 1
+                for j in 1:N
+                   CUDA.@atomic A_nz[K[i]] += V[i]
+                end
             end
+            # if i ≤ N && K[i] > 0 && i > 0
+            #     CUDA.@atomic A_nz[K[i]] += V[i]  # Update nonzero elements
+            # end
             return
         end
     
-        A_nz = A.nzVal  # Get the nonzero values array
         N = length(V)
         if N == 0
             return A
         end
+        N=5
         threads = 256
         blocks = cld(N, threads)
     
-        CUDA.@cuda threads=threads blocks=blocks kernel_update!(A_nz, V, K, N)
+        CUDA.@cuda threads=threads blocks=blocks kernel_update!(A.nzVal, V, K, N)
     
         return A
     end
