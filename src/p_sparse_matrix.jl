@@ -1569,7 +1569,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     #     CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
     # end
     function perm_partition!(V, perm)
-        N = length(V)
+        N = length(perm)
         threads = 256
         # if N > 0
             blocks = cld(N, threads)
@@ -1613,7 +1613,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
 
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        
+            println("change= $(change_index)")
             perm_partition!(V, change_index)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]

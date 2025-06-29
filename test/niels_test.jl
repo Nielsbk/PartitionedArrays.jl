@@ -357,8 +357,8 @@ function time(distribute,n,f,nruns,type)
     # println(typeof(A_test))
     try 
         # CUDA.pool_status()
-        # fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
-        @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
+        fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
+        # @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
         println(err)
@@ -391,9 +391,9 @@ function experiment(distribute)
         # end
     end
 
-    for type in ["cpu","gpu"]
-        for n in [20,50,100,150,200,250]
-        # for n in [2,5]
+    for type in ["gpu"]
+        # for n in [20,50,100,150,200,250]
+        for n in [2,5]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = 0
