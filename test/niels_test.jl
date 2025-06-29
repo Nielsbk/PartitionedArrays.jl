@@ -378,8 +378,8 @@ function experiment(distribute)
     end
 
     for type in ["gpu"]
-        for n in [20,50,100,150,200,300,400]
-        # for n in [300,400]
+        # for n in [20,50,100,150,200,300,400]
+        for n in [2,5]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = 0
