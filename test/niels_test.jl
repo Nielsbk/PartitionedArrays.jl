@@ -63,13 +63,13 @@ end
 #     collect(A.nzVal),
 # )
 
-# # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
-# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
-#     size(A)...,
-#     convert(Vector{Int}, collect(A.colPtr)),
-#     convert(Vector{Int}, collect(A.rowVal)),
-#     collect(A.nzVal),
-# # )
+# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
+Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+    size(A)...,
+    convert(Vector{Int}, collect(A.colPtr)),
+    convert(Vector{Int}, collect(A.rowVal)),
+    collect(A.nzVal),
+# )
 # Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
 #     size(A)...,
 #     convert(Vector{Int64}, collect(A.colPtr)),
