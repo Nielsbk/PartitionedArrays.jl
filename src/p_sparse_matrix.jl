@@ -1685,7 +1685,6 @@ function psparse_yung_sheng_gpu_time!(A, V, cache,T)
         A_nz = A.nzVal  # Get the nonzero values array
         N = length(V)
         if N == 0
-            println("empty sparse_matrix warning")
             return A
         end
         threads = 256
