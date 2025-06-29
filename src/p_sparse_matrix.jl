@@ -1609,12 +1609,12 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
     function kernel_perm_partition!(V,perm)
         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-        if i <= length(perm)
+        # if i <= length(perm)
             idx = perm[i]
             tmp = V[idx[1]]
             V[idx[1]] = V[idx[2]]
             V[idx[2]] = tmp
-        end
+        # end
         return
     end
 
