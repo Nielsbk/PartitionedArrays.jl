@@ -345,13 +345,14 @@ function time(distribute,n,f,nruns,type)
     # if rank == 0
     # println(typeof(A))
     # println(typeof(A_test))
-    # try 
+    try 
         # CUDA.pool_status()
         fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A),rank)
         # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
-    # catch
-        # println("failed with size $(n)")
-    # end
+    catch err
+        println("failed with size $(n)")
+        println(err)
+    end
     # end
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
@@ -367,8 +368,8 @@ function experiment(distribute)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
-    nruns = 2
-    filename="strongscaling_sync_$(size)_$(local_size)_snellius.json"
+    nruns = 20
+    filename="strongscaling_sync2_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
     if rank == 0
@@ -380,8 +381,8 @@ function experiment(distribute)
         # end
     end
 
-    for type in ["gpu"]
-        for n in [20,50,100,150,200,300,400]
+    for type in ["cpu","gpu"]
+        for n in [20,50,100,150,200,250,300]
         # for n in [2,5]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
@@ -390,16 +391,16 @@ function experiment(distribute)
                 nz = i
             end
             PartitionedArrays.map_main(timings) do timing
-                push!(df,(n,"linear_elasticity_fem",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
+                push!(df,(n,"laplacian_fdm",nruns, type,timing,size,size*(nz[1]),parts_per_dir, nodes_per_axis,gpus_per_axis))
             end
         end
     end
 
-    # if rank == 0
-    #     open(filename,"w") do io
-    #         JSON3.write(io,Tables.columntable(df))
-    #     end
-    # end
+    if rank == 0
+        open(filename,"w") do io
+            JSON3.write(io,Tables.columntable(df))
+        end
+    end
 
 end
 PartitionedArrays.with_mpi(experiment)
