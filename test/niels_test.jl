@@ -296,7 +296,7 @@ function time(distribute,n,f,nruns,type)
 
     map(V) do val
         if rank == 0
-            println(length(val))
+            println("V local length $(length(val))")
         end
     end
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
