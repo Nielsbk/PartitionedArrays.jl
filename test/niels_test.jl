@@ -50,18 +50,18 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     if rank == 0
         println("different $(count_diffs) times")
         println("error percentage of $(count_diffs/length(A.nzval)) ")
-        println("true values: $(a_diff)")
-        println("gpu values: $(b_diff)")
+        # println("true values: $(a_diff)")
+        # println("gpu values: $(b_diff)")
 
     end
 end
 
-Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
-    size(A)...,
-    collect(A.colPtr),
-    collect(A.rowVal),
-    collect(A.nzVal),
-)
+# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+#     size(A)...,
+#     collect(A.colPtr),
+#     collect(A.rowVal),
+#     collect(A.nzVal),
+# )
 
 # # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 # Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
@@ -69,7 +69,7 @@ Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = Spars
 #     convert(Vector{Int}, collect(A.colPtr)),
 #     convert(Vector{Int}, collect(A.rowVal)),
 #     collect(A.nzVal),
-# )
+# # )
 # Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
 #     size(A)...,
 #     convert(Vector{Int64}, collect(A.colPtr)),
