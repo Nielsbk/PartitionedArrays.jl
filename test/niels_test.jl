@@ -56,19 +56,19 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     end
 end
 
-# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
-#     size(A)...,
-#     collect(A.colPtr),
-#     collect(A.rowVal),
-#     collect(A.nzVal),
-# )
-
-# GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
     size(A)...,
-    convert(Vector{Int}, collect(A.colPtr)),
-    convert(Vector{Int}, collect(A.rowVal)),
+    collect(A.colPtr),
+    collect(A.rowVal),
     collect(A.nzVal),
+)
+
+# # GPU -> CPU (CuSparseMatrixCSC -> SparseMatrixCSC)
+# Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
+#     size(A)...,
+#     convert(Vector{Int}, collect(A.colPtr)),
+#     convert(Vector{Int}, collect(A.rowVal)),
+#     collect(A.nzVal),
 # )
 # Adapt.adapt_structure(::Type{Array}, A::CuCSCMatrix64) = SparseMatrixCSC(
 #     size(A)...,
@@ -357,8 +357,8 @@ function time(distribute,n,f,nruns,type)
     # println(typeof(A_test))
     try 
         # CUDA.pool_status()
-        fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
-        # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
+        # fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
+        @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
         println(err)
