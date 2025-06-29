@@ -1523,6 +1523,8 @@ function psparse_yung_sheng!(A, V, cache)
         end
     end
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
+        println(typeof(change_index))
+        println(length(change_index))
         perm_partition!(V, change_index)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = view(V, snd_index)
@@ -1615,7 +1617,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
             println(typeof(change_index))
             println(length(change_index))
-            println(collect(change_index))
+            # println(collect(change_index))
             perm_partition!(V, change_index)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]

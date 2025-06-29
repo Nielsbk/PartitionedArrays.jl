@@ -391,7 +391,7 @@ function experiment(distribute)
         # end
     end
 
-    for type in ["gpu"]
+    for type in ["cpu","gpu"]
         # for n in [20,50,100,150,200,250]
         for n in [2,5]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
