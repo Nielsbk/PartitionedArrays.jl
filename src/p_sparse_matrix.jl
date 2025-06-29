@@ -1573,9 +1573,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     #     CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
     # end
     function perm_partition!(V, perm)
-        println(typeof(perm))
-        println("gpu $(length(perm))")
-        N = 5
+        N = length(perm)
         threads = 256
         if N > 0
             blocks = cld(N, threads)
@@ -1608,14 +1606,12 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
     function kernel_perm_partition!(V,perm)
         t = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-        if t == 1
-            for idx in 1:length(perm)
-                i, j = perm[idx]
-                tmp = V[i]
-                V[1] = V[j]
-                V[j] = tmp
-            end
-        end
+
+        i, j = perm[t]
+        tmp = V[i]
+        V[1] = V[j]
+        V[j] = tmp
+
         return
     end
     
@@ -1655,10 +1651,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
 
-    # t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
+    t_V = PartitionedArrays.exchange!(V_rcv_buf, V_snd_buf, graph)
 
     PartitionedArrays.@fake_async begin
-        # fetch(t_V)
+        fetch(t_V)
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
         map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
         A
