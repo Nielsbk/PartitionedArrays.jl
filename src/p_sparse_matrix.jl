@@ -1569,7 +1569,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     #     CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
     # end
     function perm_partition!(V, perm)
-        N = length(perm)
+        N = length(V)
         threads = 256
         if N > 0
             blocks = cld(N, threads)
@@ -1605,9 +1605,9 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
         if i <= length(perm)
             idx = perm[i]
-            CUDA.@atomic tmp = V[idx[1]]
-            CUDA.@atomic V[idx[1]] = V[idx[2]]
-            CUDA.@atomic V[idx[2]] = tmp
+            tmp = V[idx[1]]
+            V[idx[1]] = V[idx[2]]
+            V[idx[2]] = tmp
         end
         return
     end
