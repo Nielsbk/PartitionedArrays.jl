@@ -358,7 +358,7 @@ function time(distribute,n,f,nruns,type)
     try 
         # CUDA.pool_status()
         # fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
-        @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
+        @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
         println(err)
