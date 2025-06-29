@@ -1,0 +1,4 @@
+/cm/shared/apps/cuda12.3/toolkit/12.3/extras/CUPTI/lib64:/cm/local/apps/cuda-driver/libs/current/lib64:/cm/shared/apps/cuda12.3/toolkit/12.3/targets/x86_64-linux/lib:/opt/ohpc/pub/mpi/libfabric/1.19.0/lib:/opt/ohpc/pub/mpi/ucx-ohpc/1.15.0/lib:/opt/ohpc/pub/libs/hwloc/lib:/opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.6/lib:/opt/ohpc/pub/compiler/gcc/12.4.0/lib64
+
+
+/opt/ohpc/pub/mpi/libfabric/1.19.0/lib:/opt/ohpc/pub/mpi/ucx-ohpc/1.15.0/lib:/opt/ohpc/pub/libs/hwloc/lib:/opt/ohpc/pub/mpi/openmpi4-gnu12/4.1.6/lib:/opt/ohpc/pub/compiler/gcc/12.4.0/lib64
