@@ -1591,6 +1591,9 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
             if i == 1
                 for j in 1:N
+                    if K[j] < 1
+                        continue
+                    end
                    CUDA.@atomic A_nz[K[j]] += V[j]
                 end
             end
