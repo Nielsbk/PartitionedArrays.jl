@@ -1617,24 +1617,33 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         return
     end
     
-    # function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-    #     println(typeof(change_index))
-    #     println(length(change_index))
-    #     perm_partition!(V, change_index)
-    #     snd_index = snd_start_index:lastindex(V)
-    #     V_raw_snd_data = view(V, snd_index)
-    #     V_snd_data = V_snd.data
-    #     for (p, v) in zip(perm, V_raw_snd_data)
-    #         V_snd_data[p] = v
-    #     end
-    # end
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
+        println(typeof(change_index))
+        println(length(change_index))
+        perm_partition!(V, change_index)
+        snd_index = snd_start_index:lastindex(V)
+        V_raw_snd_data = view(V, snd_index)
+        V_snd_data = V_snd.data
+        for (p, v) in zip(perm, V_raw_snd_data)
+            V_snd_data[p] = v
+        end
+    end
+    function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
+        function scatter_kernel!(V_snd_data, perm, V_raw_snd_data)
+            i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
+            if i <= length(perm)
+                p = perm[i]
+                V_snd_data[p] = V_raw_snd_data[i]
+            end
+            return
+        end
             perm_partition!(V, change_index)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
             println("perm type $(typeof(perm))")
-            V_snd_data[perm] .= V_raw_snd_data
+            # V_snd_data[perm] .= V_raw_snd_data
+            @cuda threads=length(perm) scatter_kernel!(V_snd_data, perm, V_raw_snd_data)
         
     end
 
