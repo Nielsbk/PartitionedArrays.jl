@@ -10,8 +10,8 @@ src = mod(rank-1, size)
 println("rank=$rank, size=$size, dst=$dst, src=$src")
 N = 10
 
-send_mesg = CuArray{Float64}(Float64(rank), N)
-recv_mesg = CuArray{Float64}(Float64(0), N)
+send_mesg = CUDA.CuArray{Float64}(Float64(rank), N)
+recv_mesg = CUDA.CuArray{Float64}(Float64(0), N)
 
 # CUDA.fill!(send_mesg, Float64(rank))
 # CUDA.fill!(recv_mesg, Float64(0))
