@@ -1579,7 +1579,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         threads = 256
         if N > 0
             blocks = cld(N, threads)
-            CUDA.@sync CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
+            CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm,N)
         end
     end
     function sparse_matrix!(A, V, K; reset=true)
@@ -1606,13 +1606,13 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     
         return A
     end
-    function kernel_perm_partition!(V,perm)
-        t = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-        if t <= length(perm)
-            i, j = perm[t]
-            tmp = V[i]
-            V[1] = V[j]
-            V[j] = tmp
+    function kernel_perm_partition!(V,perm,N)
+        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+        if i <= N
+            idx = perm[i]
+            tmp = V[idx[1]]
+            V[idx[1]] = V[idx[2]]
+            V[idx[2]] = tmp
         end
         return
     end
@@ -1647,7 +1647,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             perm_ghost = view(perm, is_ghost)
         
          sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
-         CUDA.@sync sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
     end
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
