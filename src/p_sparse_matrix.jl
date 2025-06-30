@@ -1617,12 +1617,23 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         return
     end
     
-
+    # function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
+    #     println(typeof(change_index))
+    #     println(length(change_index))
+    #     perm_partition!(V, change_index)
+    #     snd_index = snd_start_index:lastindex(V)
+    #     V_raw_snd_data = view(V, snd_index)
+    #     V_snd_data = V_snd.data
+    #     for (p, v) in zip(perm, V_raw_snd_data)
+    #         V_snd_data[p] = v
+    #     end
+    # end
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
             perm_partition!(V, change_index)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
+            println("perm type $(typeof(perm))")
             V_snd_data[perm] .= V_raw_snd_data
         
     end
