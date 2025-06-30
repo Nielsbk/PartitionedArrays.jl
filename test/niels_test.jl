@@ -310,7 +310,7 @@ function time(distribute,n,f,nruns,type)
 
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     A_test = deepcopy(A)
-    # A_test = Adapt.adapt(CuArray,A_test)
+    A_test = Adapt.adapt(CuArray,A_test)
     cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
@@ -341,7 +341,7 @@ function time(distribute,n,f,nruns,type)
     CUDA.synchronize()
     # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     A_gpu = Adapt.adapt(Array,A)
-
+    A_test = Adapt.adapt(Array,A_test)
     # for irun in 1:nruns
     #     t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     # end
