@@ -536,20 +536,20 @@ function setup_exchange_impl(
     req_all
 end
 
-# function setup_exchange_impl(
-#     rcv::MPIArray,
-#     snd::MPIArray,
-#     graph::ExchangeGraph{<:MPIArray},
-#     ::Type{T}) where T<: CuArray
-#     @assert size(rcv) == size(snd)
-#     @assert graph.rcv.comm === graph.rcv.comm
-#     @assert graph.rcv.comm === graph.snd.comm
-#     comm = graph.rcv.comm
-#     nreqs = length(graph.rcv.item) + length(graph.snd.item)
-#     req_all = MPI.UnsafeMultiRequest(nreqs)
-#     buffers_rcv = []
-#     (req_all,buffers_rcv)
-# end
+function setup_exchange_impl(
+    rcv::MPIArray,
+    snd::MPIArray,
+    graph::ExchangeGraph{<:MPIArray},
+    ::Type{T}) where T<: CuArray
+    @assert size(rcv) == size(snd)
+    @assert graph.rcv.comm === graph.rcv.comm
+    @assert graph.rcv.comm === graph.snd.comm
+    comm = graph.rcv.comm
+    nreqs = length(graph.rcv.item) + length(graph.snd.item)
+    req_all = MPI.UnsafeMultiRequest(nreqs)
+    buffers_rcv = []
+    (req_all,buffers_rcv)
+end
 
 function exchange_impl!(
     rcv::MPIArray,
