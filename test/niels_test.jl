@@ -336,9 +336,9 @@ function time(distribute,n,f,nruns,type)
     # end
     t = zeros(nruns)
 
-    CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    CUDA.synchronize()
+    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    # CUDA.synchronize()
     # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     A_gpu = Adapt.adapt(Array,A)
     A_test = Adapt.adapt(Array,A_test)
@@ -349,13 +349,16 @@ function time(distribute,n,f,nruns,type)
 
     # A = Adapt.adapt(Array,A)
 
-
+    # map(PartitionedArrays.local_values(new_A),PartitionedArrays.local_values(A)) do a,b
+    #         println("ites")
+    #         @assert a == b
+    #     end
 
     # @assert PartitionedArrays.local_values(A_test) == PartitionedArrays.local_values(A_gpu)
     try 
         # CUDA.pool_status()
-        fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
-        # @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
+        # fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
+        @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
         println(err)
