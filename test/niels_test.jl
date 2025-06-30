@@ -356,10 +356,11 @@ function time(distribute,n,f,nruns,type)
     try 
         # CUDA.pool_status()
         A = PartitionedArrays.centralize(A)
+        A_test = PartitionedArrays.centralize(A_test)
         open("sparse$(size)cpu.jls", "w") do io
             serialize(io, A_test)
         end
-        fast_sparse_eq(PartitionedArrays.centralize(A_test), A,rank)
+        fast_sparse_eq(A_test, A,rank)
         # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
