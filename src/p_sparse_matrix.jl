@@ -1557,9 +1557,9 @@ function psparse_yung_sheng!(A, V, cache)
     end
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
     map(partition_and_prepare_snd_buf!, V_snd_buf, V, snd_start_idx, change_snd, perm_snd)
-    # t_V = exchange!(V_rcv_buf, V_snd_buf, graph)
+    t_V = exchange!(V_rcv_buf, V_snd_buf, graph)
     @fake_async begin
-        # fetch(t_V)
+        fetch(t_V)
         map(store_recv_data!, V, hold_data_size, V_rcv_buf)
         map(split_and_compress!, partition(A), V, own_data_size, change_sparse, perm_sparse)
         A
