@@ -310,6 +310,7 @@ function time(distribute,n,f,nruns,type)
 
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     A_test = deepcopy(A)
+    # A_test = Adapt.adapt(CuArray,A_test)
     cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
@@ -349,11 +350,6 @@ function time(distribute,n,f,nruns,type)
     # A = Adapt.adapt(Array,A)
 
 
-    map(PartitionedArrays.own_values(A_test),PartitionedArrays.own_values(A_gpu)) do a,b
-        println("local type a $(typeof(a))")
-        println("local type b $(typeof(a))")
-        @assert a == b
-    end
 
     # @assert PartitionedArrays.local_values(A_test) == PartitionedArrays.local_values(A_gpu)
     try 
