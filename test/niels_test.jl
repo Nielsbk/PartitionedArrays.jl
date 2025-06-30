@@ -47,13 +47,10 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     a_diff = A.nzval[diff_indices]
     b_diff = B.nzval[diff_indices]
 
-    if rank == 0
-        println("different $(count_diffs) times")
-        println("error percentage of $(count_diffs/length(A.nzval)) ")
-        # println("true values: $(a_diff)")
-        # println("gpu values: $(b_diff)")
-
-    end
+    println("different $(count_diffs) times in rank $(rank)")
+    println("error percentage of $(count_diffs/length(A.nzval)) in rank $(rank) ")
+    # println("true values: $(a_diff)")
+    # println("gpu values: $(b_diff)")
 end
 
 Adapt.adapt_structure(::Type{Array}, A::CUDA.CUSPARSE.CuSparseMatrixCSC) = SparseMatrixCSC(
@@ -288,7 +285,7 @@ function time(distribute,n,f,nruns,type)
     ranks = distribute(LinearIndices((p,)))
     timing = distribute([[] for i in 1:size ])
 
-    nodes_per_dir = map(i->n,parts_per_dir)
+    nodes_per_dir = map(i->n*i,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
 
     _,_,V,_,_ = args

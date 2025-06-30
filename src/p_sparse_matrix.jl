@@ -1626,7 +1626,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
 
     function store_recv_data!(V, n_hold_data, V_rcv)
-        
+            println(" rcv data length $(length(V_rcv.data))")
             n_data = n_hold_data + length(V_rcv.data)
             resize!(V, n_data)
             rcv_index = (n_hold_data+1):n_data
