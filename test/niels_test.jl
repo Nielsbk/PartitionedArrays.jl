@@ -308,8 +308,9 @@ function time(distribute,n,f,nruns,type)
         return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
     end
 
-    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     A_test = deepcopy(A)
+    PartitionedArrays.psparse_yung_sheng!(A_test,V,cache) |> wait
+
     cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
