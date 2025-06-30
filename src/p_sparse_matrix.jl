@@ -1536,6 +1536,7 @@ function psparse_yung_sheng!(A, V, cache)
         end
     end
     function store_recv_data!(V, n_hold_data, V_rcv)
+        println(" rcv data length cpu $(length(V_rcv.data))")
         n_data = n_hold_data + length(V_rcv.data)
         resize!(V, n_data)
         rcv_index = (n_hold_data+1):n_data
