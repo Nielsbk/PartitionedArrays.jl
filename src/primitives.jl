@@ -1062,8 +1062,8 @@ function exchange_impl!(rcv,snd,graph,setup,::Type{T}) where T<:AbstractVector
 
             # Perform the copy directly on the GPU:
             copyto!(
-                view(rcv[rcv_id].data, p_rcv_start : p_rcv_start + n ),
-                view(snd[snd_id].data, p_snd_start : p_snd_start + n )
+                view(rcv[rcv_id].data, p_rcv_start : p_rcv_start + n - 1),
+                view(snd[snd_id].data, p_snd_start : p_snd_start + n - 1)
             )
             # @assert ptrs_rcv[i+1]-ptrs_rcv[i] == ptrs_snd[j+1]-ptrs_snd[j]
             # for p in 1:(ptrs_rcv[i+1]-ptrs_rcv[i])
