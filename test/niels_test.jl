@@ -349,8 +349,9 @@ function time(distribute,n,f,nruns,type)
     # A = Adapt.adapt(Array,A)
 
 
-    map(PartitionedArrays.local_values(A_test),PartitionedArrays.local_values(A)) do a,b
-        print("local type $(typeof(a))")
+    map(PartitionedArrays.own_values(A_test),PartitionedArrays.own_values(A_gpu)) do a,b
+        println("local type a $(typeof(a))")
+        println("local type b $(typeof(a))")
         @assert a == b
     end
 

@@ -1637,7 +1637,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         return
     end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
-          perm_partition!(V, change_index)
+            perm_partition!(V, change_index)
         
             is_own = firstindex(V):n_own_data
             is_ghost = (n_own_data+1):lastindex(V)
