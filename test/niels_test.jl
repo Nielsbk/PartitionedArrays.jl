@@ -310,7 +310,6 @@ function time(distribute,n,f,nruns,type)
 
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
     A_test = deepcopy(A)
-    A_test = Adapt.adapt(CuArray,A_test)
     cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
@@ -336,12 +335,11 @@ function time(distribute,n,f,nruns,type)
     # end
     t = zeros(nruns)
 
-    PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     # CUDA.synchronize()
     # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    A_gpu = Adapt.adapt(Array,A)
-    A_test = Adapt.adapt(Array,A_test)
+    A = Adapt.adapt(Array,A)
     # for irun in 1:nruns
     #     t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     # end
@@ -358,7 +356,7 @@ function time(distribute,n,f,nruns,type)
     try 
         # CUDA.pool_status()
         # fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
-        @test PartitionedArrays.centralize(A_gpu) == PartitionedArrays.centralize(A_test)
+        @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
     catch err
         println("failed with size $(n)")
         println(err)
