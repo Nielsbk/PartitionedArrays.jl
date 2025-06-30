@@ -349,14 +349,12 @@ function time(distribute,n,f,nruns,type)
     # A = Adapt.adapt(Array,A)
 
 
-    # map(PartitionedArrays.local_values(A_test),PartitionedArrays.local_values(A)) do a,b
-    #     @assert a == b
-    # end
-    if rank == 0
-        println(typeof(PartitionedArrays.local_values(A_test)))
-        # println(typeof(A_test))
+    map(PartitionedArrays.local_values(A_test),PartitionedArrays.local_values(A)) do a,b
+        print("local type $(typeof(a))")
+        @assert a == b
     end
-    @assert PartitionedArrays.local_values(A_test) == PartitionedArrays.local_values(A_gpu)
+
+    # @assert PartitionedArrays.local_values(A_test) == PartitionedArrays.local_values(A_gpu)
     try 
         # CUDA.pool_status()
         fast_sparse_eq(PartitionedArrays.centralize(A_test), PartitionedArrays.centralize(A_gpu),rank)
