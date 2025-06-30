@@ -1629,9 +1629,9 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         end
     end
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        function scatter_kernel!(V_snd_data, perm, V_raw_snd_data)
+        function scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
             i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
-            if i <= length(perm)
+            if i <= N
                 p = perm[i]
                 V_snd_data[p] = V_raw_snd_data[i]
             end
@@ -1643,7 +1643,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             V_snd_data = V_snd.data
             println("perm type $(typeof(perm))")
             # V_snd_data[perm] .= V_raw_snd_data
-            @cuda threads=length(perm) scatter_kernel!(V_snd_data, perm, V_raw_snd_data)
+            N = length(perm)
+            if N > 0
+                @cuda threads=N scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
+            end
         
     end
 
