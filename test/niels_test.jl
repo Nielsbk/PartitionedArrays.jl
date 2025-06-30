@@ -10,7 +10,7 @@ using CUDA
 using MPI
 using DataFrames
 using JSON3
-
+using Serialization
 
 # struct CuCSCMatrix64
 #     m::Int                # number of rows
