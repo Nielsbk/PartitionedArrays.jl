@@ -1575,6 +1575,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     # end
     function perm_partition!(V, perm)
         N = length(perm)
+        println("gpu $(length(perm))")
         threads = 256
         if N > 0
             blocks = cld(N, threads)
@@ -1646,7 +1647,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             perm_ghost = view(perm, is_ghost)
         
          sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
-         sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+         CUDA.@sync sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
         return
     end
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
