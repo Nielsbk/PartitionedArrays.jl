@@ -1515,18 +1515,13 @@ function psparse_yung_sheng!(f, I, J, V, rows, cols)
         PSparseMatrix(vals_fa, rows_fa, cols_fa, assembled), cache
     end
 end
-
 function psparse_yung_sheng!(A, V, cache)
     function perm_partition!(V, perm::Vector{Tuple{T,T}}) where {T}
-        println(typeof(perm))
-        println("cpu $(length(perm))")
         for (i, j) in perm
             V[i], V[j] = V[j], V[i]
         end
     end
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-        println(typeof(change_index))
-        println(length(change_index))
         perm_partition!(V, change_index)
         snd_index = snd_start_index:lastindex(V)
         V_raw_snd_data = view(V, snd_index)
@@ -1536,7 +1531,6 @@ function psparse_yung_sheng!(A, V, cache)
         end
     end
     function store_recv_data!(V, n_hold_data, V_rcv)
-        println(" rcv data length cpu $(length(V_rcv.data))")
         n_data = n_hold_data + length(V_rcv.data)
         resize!(V, n_data)
         rcv_index = (n_hold_data+1):n_data
@@ -1567,12 +1561,6 @@ function psparse_yung_sheng!(A, V, cache)
 end
 
 function psparse_yung_sheng_gpu!(A, V, cache)
-    # function perm_partition!(V, perm)
-    #     N = length(V)
-    #     threads = 256
-    #     blocks = cld(N, threads)
-    #     CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
-    # end
     function perm_partition!(V, perm)
         N = length(perm)
         println("gpu $(length(perm))")
@@ -1617,17 +1605,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         return
     end
     
-    # function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
-    #     println(typeof(change_index))
-    #     println(length(change_index))
-    #     perm_partition!(V, change_index)
-    #     snd_index = snd_start_index:lastindex(V)
-    #     V_raw_snd_data = view(V, snd_index)
-    #     V_snd_data = V_snd.data
-    #     for (p, v) in zip(perm, V_raw_snd_data)
-    #         V_snd_data[p] = v
-    #     end
-    # end
+
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
         function scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
             i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
@@ -1659,6 +1637,18 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         
         return
     end
+    #     function split_and_compress!(A, V, n_own_data, change_index, perm)
+    #     perm_partition!(V, change_index)
+    #     is_own = firstindex(V):n_own_data
+    #     is_ghost = (n_own_data+1):lastindex(V)
+    #     V_own_own = view(V, is_own)
+    #     V_own_ghost = view(V, is_ghost)
+    #     perm_own = view(perm, is_own)
+    #     perm_ghost = view(perm, is_ghost)
+    #     sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
+    #     sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
+    #     return
+    # end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
             perm_partition!(V, change_index)
         
