@@ -20,4 +20,4 @@ recv_mesg = CuArray{Float64}(Float64(0), N)
 #rreq = MPI.Irecv!(recv_mesg, src,  src+32, comm)
 MPI.Sendrecv!(send_mesg, dst, 0, recv_mesg, src, 0, comm)
 
-println("recv_mesg on proc $rank: $recv_mesg")
+println("recv_mesg on proc $rank: $(collect(recv_mesg))")
