@@ -1563,7 +1563,6 @@ end
 function psparse_yung_sheng_gpu!(A, V, cache)
     function perm_partition!(V, perm)
         N = length(perm)
-        println("gpu $(length(perm))")
         threads = 256
         if N > 0
             blocks = cld(N, threads)
@@ -1604,8 +1603,6 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         end
         return
     end
-    
-
     function partition_and_prepare_snd_buf!(V_snd, V, snd_start_index, change_index, perm)
         function scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
             i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
@@ -1619,7 +1616,6 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
-            println("perm type $(typeof(perm))")
             # V_snd_data[perm] .= V_raw_snd_data
             N = length(perm)
             if N > 0
@@ -1629,7 +1625,6 @@ function psparse_yung_sheng_gpu!(A, V, cache)
     end
 
     function store_recv_data!(V, n_hold_data, V_rcv)
-            println(" rcv data length $(length(V_rcv.data))")
             n_data = n_hold_data + length(V_rcv.data)
             resize!(V, n_data)
             rcv_index = (n_hold_data+1):n_data
@@ -1637,18 +1632,6 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         
         return
     end
-    #     function split_and_compress!(A, V, n_own_data, change_index, perm)
-    #     perm_partition!(V, change_index)
-    #     is_own = firstindex(V):n_own_data
-    #     is_ghost = (n_own_data+1):lastindex(V)
-    #     V_own_own = view(V, is_own)
-    #     V_own_ghost = view(V, is_ghost)
-    #     perm_own = view(perm, is_own)
-    #     perm_ghost = view(perm, is_ghost)
-    #     sparse_matrix!(A.blocks.own_own, V_own_own, perm_own)
-    #     sparse_matrix!(A.blocks.own_ghost, V_own_ghost, perm_ghost)
-    #     return
-    # end
     function split_and_compress!(A, V, n_own_data, change_index, perm)
             perm_partition!(V, change_index)
         
@@ -1677,12 +1660,6 @@ function psparse_yung_sheng_gpu!(A, V, cache)
 end
 
 function psparse_yung_sheng_gpu_time!(A, V, cache,T)
-    # function perm_partition!(V, perm)
-    #     N = length(V)
-    #     threads = 256
-    #     blocks = cld(N, threads)
-    #     CUDA.@cuda threads=threads blocks=blocks kernel_perm_partition!(V,perm)
-    # end
     function perm_partition!(V, perm)
         N = length(perm)
         threads = 256

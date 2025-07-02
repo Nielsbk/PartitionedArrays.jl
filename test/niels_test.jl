@@ -308,10 +308,10 @@ function time(distribute,n,f,nruns,type)
         return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
     end
 
-    A_test = deepcopy(A)
-    PartitionedArrays.psparse_yung_sheng!(A_test,V,cache) |> wait
+    # A_test = deepcopy(A)
+    # PartitionedArrays.psparse_yung_sheng!(A_test,V,cache) |> wait
 
-    cache_test = deepcopy(cache)
+    # cache_test = deepcopy(cache)
 
     graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
 
@@ -341,9 +341,9 @@ function time(distribute,n,f,nruns,type)
     # CUDA.synchronize()
     # CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
     A = Adapt.adapt(Array,A)
-    # for irun in 1:nruns
-    #     t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
-    # end
+    for irun in 1:nruns
+        t[irun] =  @elapsed CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A,V,cache) |> wait
+    end
     ts_in_main = PartitionedArrays.gather(map(p->t,ranks))
 
     # A = Adapt.adapt(Array,A)
@@ -354,19 +354,19 @@ function time(distribute,n,f,nruns,type)
     #     end
 
     # @assert PartitionedArrays.local_values(A_test) == PartitionedArrays.local_values(A_gpu)
-    try 
-        # CUDA.pool_status()
-        A = PartitionedArrays.centralize(A)
-        A_test = PartitionedArrays.centralize(A_test)
-        # open("sparse$(size)cpu.jls", "w") do io
-        #     serialize(io, A_test)
-        # end
-        fast_sparse_eq(A_test, A,rank)
-        # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
-    catch err
-        println("failed with size $(n)")
-        println(err)
-    end
+    # try 
+    #     # CUDA.pool_status()
+    #     A = PartitionedArrays.centralize(A)
+    #     A_test = PartitionedArrays.centralize(A_test)
+    #     # open("sparse$(size)cpu.jls", "w") do io
+    #     #     serialize(io, A_test)
+    #     # end
+    #     fast_sparse_eq(A_test, A,rank)
+    #     # @test PartitionedArrays.centralize(A) == PartitionedArrays.centralize(A_test)
+    # catch err
+    #     println("failed with size $(n)")
+    #     println(err)
+    # end
     # end
     return ts_in_main, PartitionedArrays.gather(map(p->length(p),V)),parts_per_dir, nodes_per_axis,gpus_per_axis
 
@@ -382,7 +382,7 @@ function experiment(distribute)
 
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
-    nruns = 1
+    nruns = 15
     filename="strongscaling_sync2_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
@@ -396,8 +396,8 @@ function experiment(distribute)
     end
 
     for type in ["cpu","gpu"]
-        # for n in [20,50,100,150,200,250]
-        for n in [50]
+        for n in [20,50,100,150,200,250,300,400]
+        # for n in [50]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
             nz = 0
