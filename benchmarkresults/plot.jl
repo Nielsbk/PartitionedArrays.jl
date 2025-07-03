@@ -14,11 +14,12 @@ markers = permutedims(markers)
 
 
 function wall_times(timings)
-    cleaned = [Vector{Float64}(row) for row in timings]
+    # cleaned = [Vector{Float64}(row) for row in timings]
+    cleaned = [row for row in timings]
     times= []
     for i in 1:length(cleaned[1])
         col = [row[i] for row in cleaned]  # Get the i-th element from each vector
-        # Example: check if all are equal
+
         push!(times,maximum(col))
     end
     return times
@@ -348,14 +349,16 @@ function strong_scaling_snellius_experiment(df,filename)
     num_workers = sort(unique(df.workers))
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
-        sort(df_gpu,[:workers])
-        base = df_gpu[!,"median_time"][1]
+        sort!(df_gpu,[:workers])
+        base = df_gpu[!,"best_time"][1]
 
-        speedup =   base ./ df_gpu[!,"median_time"]
+        speedup =   base ./ df_gpu[!,"best_time"]
         if i == 1
             plot(
                 num_workers, num_workers,
                 label = "Ideal",
+                yscale = :log10,
+                xscale = :log10,
                 linecolor=:black,
                 linestyle=:dash,
                 xlabel = "GPUs",
@@ -374,16 +377,18 @@ function strong_scaling_snellius_experiment(df,filename)
         df_cpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "cpu") , :]
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
 
-        sort(df_gpu,[:workers])
-        sort(df_cpu,[:workers])
-        speedup = df_cpu[!,"median_time"]  ./ df_gpu[!,"median_time"]
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
+        speedup = df_cpu[!,"best_time"]  ./ df_gpu[!,"best_time"]
 
         if i == 1
             plot(
                 num_workers, speedup,
                 label = "Problem size: $n",
-                xlabel = "GPUs/CPUs",
-                ylabel = "Speedup",
+                yscale = :log10,
+                xscale = :log10,
+                xlabel = "Workers",
+                ylabel = "Speedup (GPU / CPU)",
                 title = " Strong scaling speedup GPU vs CPU",
                 marker=markers[i],
                 legend = :outertopright
@@ -398,14 +403,16 @@ function strong_scaling_snellius_experiment(df,filename)
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
         
-        sort(df_gpu,[:workers])
-        time = df_gpu[!,"median_time"]
+        sort!(df_gpu,[:workers])
+        time = df_gpu[!,"best_time"]
 
         if i == 1
             plot(
                 num_workers, time,
                 xlabel = "GPUs",
                 ylabel = "Time(s)",
+                yscale = :log10,
+                xscale = :log10,
                 title = " Strong scaling wall times",
                 linewidth = 2,
                 legend = :outertopright,
@@ -427,7 +434,7 @@ function weak_scaling_snellius_experiment(df,filename)
 
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
-        sort(df_gpu,[:workers])
+        sort!(df_gpu,[:workers])
         base = df_gpu[!,"median_time"][1]
         speedup =   base ./ df_gpu[!,"median_time"]
         if i == 1
@@ -452,8 +459,8 @@ function weak_scaling_snellius_experiment(df,filename)
         df_cpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "cpu") , :]
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
 
-        sort(df_gpu,[:workers])
-        sort(df_cpu,[:workers])
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
         speedup = df_cpu[!,"median_time"]  ./ df_gpu[!,"median_time"]
 
         if i == 1
@@ -476,7 +483,7 @@ function weak_scaling_snellius_experiment(df,filename)
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
         
-        sort(df_gpu,[:workers])
+        sort!(df_gpu,[:workers])
         time = df_gpu[!,"median_time"]
 
         if i == 1
@@ -484,6 +491,7 @@ function weak_scaling_snellius_experiment(df,filename)
                 num_workers, time,
                 xlabel = "GPUs",
                 ylabel = "Time(s)",
+                yscale = :log10,
                 title = " Weak scaling wall times",
                 linewidth = 2,
                 legend = :outertopright,
@@ -507,12 +515,13 @@ end
 function time_experiment(df,filename,type)
     num_workers = sort(unique(df.num_workers))
     problem_sizes = sort(unique(df.n))
-    sleutels = ["exchange","split_and_compress","partition_and_prepare_snd_buf","store_recv_data"]
+    # sleutels = ["exchange","partition_and_prepare_snd_buf","store_recv_data"]
+    sleutels = names(df)[1:end-2]
 
-
+    
     for n in problem_sizes
         df_temp = df[(df.n .== n) , :]
-        sort(df_temp,[:num_workers])
+        sort!(df_temp,[:num_workers])
         for (i,key) in enumerate(sleutels)
             # Extract avg, min, max values for the chosen key from each dict
             avg_vals = [d[:avg] for d in df_temp[!,key]]
@@ -522,7 +531,7 @@ function time_experiment(df,filename,type)
             # Calculate lower and upper error bars
             yerr_lower = avg_vals .- min_vals
             yerr_upper = max_vals .- avg_vals
-
+            # xticks = minimum(num_workers):maximum(num_workers)
             # Plot line with asymmetric error bars
             if i == 1
                 plot(num_workers, avg_vals,
@@ -532,6 +541,7 @@ function time_experiment(df,filename,type)
                     title = "$(type) timings with problem size $(n)",
                     legend = :outertopright,
                     label = key,
+                    # xticks=xticks,
                     lw = 2,
                     marker = markers[i])
             else
@@ -544,6 +554,31 @@ function time_experiment(df,filename,type)
         end
         savefig(filename*"_$(n).png")
     end
+
+    # for gpus in [1]
+    #     df_temp = df[(df.num_workers .== gpus) , :]
+    #     sort!(df_temp,[:n])
+    #     for (i,key) in enumerate(sleutels)
+    #         avg_vals = [d[:avg] for d in df_temp[!,key]]
+    #         if i == 1
+    #             plot(problem_sizes, avg_vals,
+
+    #                 xlabel = "Problem size",
+    #                 ylabel = "Time(s)",
+    #                 title = "$(type) time distribution of different parts",
+    #                 legend = :outertopright,
+    #                 label = key,
+    #                 lw = 2,
+    #                 marker = markers[i])
+    #         else
+    #             plot!(problem_sizes, avg_vals,
+    #                 label=key,
+    #                 marker = markers[i]
+    #             )
+    #         end
+    #     end
+    #     savefig(filename*"size_vs_time_$(gpus).png")
+    # end
     
 end
 
