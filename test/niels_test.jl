@@ -332,11 +332,11 @@ function test(distribute)
     
     rcv = PartitionedArrays.gather(V,destination=:all)
 
-    PartitionedArrays.map_main(rcv) do r
+    PartitionedArrays.map_main(rcv,V) do r,v
         println("map_main")
         println(typeof(r))
-        println(typeof(r))
-       @test r == V
+        println(typeof(v))
+       @test r == v
     end
 
     printonce("A_seq and A_cpu initial",rank)
