@@ -332,8 +332,8 @@ function test(distribute)
     
     rcv = PartitionedArrays.gather(V,destination=:all)
 
-    map(rcv) do rcv
-       @test rcv == V
+    PartitionedArrays.map(rcv) do r
+       @test r == V
     end
 
     printonce("A_seq and A_cpu initial",rank)
