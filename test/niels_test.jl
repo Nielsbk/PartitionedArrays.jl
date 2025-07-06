@@ -332,7 +332,8 @@ function test(distribute)
     
     rcv = PartitionedArrays.gather(V,destination=:all)
 
-    PartitionedArrays.map(rcv) do r
+    PartitionedArrays.map_main(rcv) do r
+        println(typeof(r))
        @test r == V
     end
 
