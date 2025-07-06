@@ -359,7 +359,7 @@ function test(distribute)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
     printonce("A_cpu and A_gpu after",rank)
-    fast_sparse_eq(A,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
+    fast_sparse_eq(PartitionedArrays.centralize(A),PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 end
 
 
