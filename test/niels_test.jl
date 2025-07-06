@@ -267,6 +267,50 @@ function calc_parts(size,local_size)
 
     return parts_per_dir, parts_per_dir_local
 end
+function test(distribute)
+
+    comm = MPI.COMM_WORLD
+    rank = MPI.Comm_rank(comm)
+    size = MPI.Comm_size(comm)
+    shared_comm = MPI.Comm_split_type(comm, MPI.COMM_TYPE_SHARED, 0)
+    f = PartitionedArrays.laplacian_fdm
+    # Get the local rank and local size
+    local_size = MPI.Comm_size(shared_comm)
+    num_nodes = size / local_size
+
+    nodes_per_axis, gpus_per_axis = calc_parts(num_nodes,local_size)
+    parts_per_dir = Base.broadcast(*, nodes_per_axis, gpus_per_axis)
+
+    p = prod(parts_per_dir)
+    ranks = distribute(LinearIndices((p,)))
+    timing = distribute([[] for i in 1:size ])
+
+    nodes_per_dir = map(i->5,parts_per_dir)
+    println(nodes_per_dir)
+    args = f(nodes_per_dir,parts_per_dir,ranks)
+    args_seq = f(nodes_per_dir)
+    A_seq, K = PartitionedArrays.sparse_matrix(args_seq...,reuse=true) 
+    A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
+
+    println(typeof(A_seq))
+    println(typeof(args_seq)) 
+    println(typeof(K))
+
+
+
+    _,_,V,_,_ = args
+    _,_,V_seq,_,_ = args_seq
+
+    @test PartitionedArrays.centralize(A) == A_seq
+
+    PartitionedArrays.sparse_matrix!(A_seq,V_seq,K)
+    PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+
+    @test PartitionedArrays.centralize(A) == A_seq
+
+end
+
+
 function time(distribute,n,f,nruns,type)
 
     comm = MPI.COMM_WORLD
@@ -287,6 +331,8 @@ function time(distribute,n,f,nruns,type)
 
     nodes_per_dir = map(i->n,parts_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
+    # args_seq = f(nodes_per_dir)
+    # A_seq = sparse_matrix(args_seq...)
 
     _,_,V,_,_ = args
 
@@ -417,7 +463,7 @@ function experiment(distribute)
     end
 
 end
-PartitionedArrays.with_mpi(experiment)
+PartitionedArrays.with_mpi(test)
 
 # function main(distribute)
 
