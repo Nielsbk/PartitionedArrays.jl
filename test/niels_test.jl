@@ -329,6 +329,7 @@ function test(distribute)
     V_gpu = Adapt.adapt(CuArray,V)
 
 
+    @test PartitionedArrays.centralize(V) == V_seq
 
     printonce("A_seq and A_cpu initial",rank)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
@@ -340,7 +341,7 @@ function test(distribute)
 
     PartitionedArrays.sparse_matrix!(A_seq,V_seq,K)
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
-    PartitionedArrays.psparse_yung_sheng_gpu!(A_gpu,V_gpu,cache_gpu) |> wait
+    CUDA.@sync PartitionedArrays.psparse_yung_sheng_gpu!(A_gpu,V_gpu,cache_gpu)
 
     printonce("A_seq and A_cpu after",rank)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
@@ -349,6 +350,8 @@ function test(distribute)
     A_gpu_to_cpu = Adapt.adapt(Array,A_gpu)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
+    printonce("A_cpu and A_gpu after",rank)
+    fast_sparse_eq(A,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 end
 
 
