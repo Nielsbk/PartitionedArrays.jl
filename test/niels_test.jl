@@ -47,9 +47,16 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     a_diff = A.nzval[diff_indices]
     b_diff = B.nzval[diff_indices]
 
-    println("different $(count_diffs) times in rank $(rank)")
-    println("error percentage of $(count_diffs/length(A.nzval)) in rank $(rank) ")
-    # println("true values: $(a_diff)")
+    if rank == 0
+        println("different $(count_diffs) times in rank $(rank)")
+        println("error percentage of $(count_diffs/length(A.nzval)) in rank $(rank) ")
+        if count_diffs < 20
+        println("true values: $(a_diff)")
+        println("gpu values: $(b_diff)")
+
+        end
+    end
+        # println("true values: $(a_diff)")
     # println("gpu values: $(b_diff)")
 end
 
@@ -267,6 +274,13 @@ function calc_parts(size,local_size)
 
     return parts_per_dir, parts_per_dir_local
 end
+
+function printonce(s,rank)
+
+    if rank == 0
+        println(s)
+    end
+end
 function test(distribute)
 
     comm = MPI.COMM_WORLD
@@ -296,17 +310,44 @@ function test(distribute)
     println(typeof(args_seq)) 
     println(typeof(K))
 
-
-
     _,_,V,_,_ = args
     _,_,V_seq,_,_ = args_seq
 
-    @test PartitionedArrays.centralize(A) == A_seq
+    graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse = cache
+
+    V_snd_buf = Adapt.adapt(CuArray,V_snd_buf)
+    V_rcv_buf = Adapt.adapt(CuArray,V_rcv_buf)
+    perm_snd = Adapt.adapt(CuArray,perm_snd)
+    change_snd = Adapt.adapt(CuArray,change_snd)
+    change_sparse = Adapt.adapt(CuArray,change_sparse)
+    perm_sparse = Adapt.adapt(CuArray,perm_sparse)
+
+    cache_gpu = graph, V_snd_buf, V_rcv_buf, hold_data_size, snd_start_idx, change_snd, perm_snd, own_data_size, change_sparse, perm_sparse
+
+    # new_cache = cache_to_gpu(new_cache)
+    A_gpu = Adapt.adapt(CuArray,A)
+    V_gpu = Adapt.adapt(CuArray,V)
+
+
+
+    printonce("A_seq and A_cpu initial",rank)
+    fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
+
+    printonce("A_seq and A_gpu initial",rank)
+    A_gpu_to_cpu = Adapt(Array,A_gpu)
+    # printonce(typeof(PartitionedArrays.centralize(A_gpu)),rank)
+    fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
     PartitionedArrays.sparse_matrix!(A_seq,V_seq,K)
     PartitionedArrays.psparse_yung_sheng!(A,V,cache) |> wait
+    PartitionedArrays.psparse_yung_sheng_gpu!(A_gpu,V_gpu,cache_gpu) |> wait
 
-    @test PartitionedArrays.centralize(A) == A_seq
+    printonce("A_seq and A_cpu after",rank)
+    fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
+
+    printonce("A_seq and A_gpu after",rank)
+    A_gpu_to_cpu = Adapt(Array,A_gpu)
+    fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
 end
 
