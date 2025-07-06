@@ -334,7 +334,7 @@ function test(distribute)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
 
     printonce("A_seq and A_gpu initial",rank)
-    A_gpu_to_cpu = Adapt(Array,A_gpu)
+    A_gpu_to_cpu = Adapt.adapt(Array,A_gpu)
     # printonce(typeof(PartitionedArrays.centralize(A_gpu)),rank)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
@@ -346,7 +346,7 @@ function test(distribute)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
 
     printonce("A_seq and A_gpu after",rank)
-    A_gpu_to_cpu = Adapt(Array,A_gpu)
+    A_gpu_to_cpu = Adapt.adapt(Array,A_gpu)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A_gpu_to_cpu),rank)
 
 end
