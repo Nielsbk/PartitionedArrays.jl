@@ -329,7 +329,12 @@ function test(distribute)
     V_gpu = Adapt.adapt(CuArray,V)
 
 
-    @test PartitionedArrays.gather(V,destination=:all) == V_seq
+    
+    rcv = PartitionedArrays.gather(V,destination=:all)
+
+    map(rcv) do rcv
+       @test rcv == V
+    end
 
     printonce("A_seq and A_cpu initial",rank)
     fast_sparse_eq(A_seq,PartitionedArrays.centralize(A),rank)
