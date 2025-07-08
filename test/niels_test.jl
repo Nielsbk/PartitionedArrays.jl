@@ -47,13 +47,20 @@ function fast_sparse_eq(A::SparseMatrixCSC, B::SparseMatrixCSC,rank)
     a_diff = A.nzval[diff_indices]
     b_diff = B.nzval[diff_indices]
 
+    if A.colptr != B.colptr
+        printonce("colptrs are different")
+    end
+
+    if A.rowval != B.rowval
+        printonce("rowvals are different")
+    end
+
     if rank == 0
         println("different $(count_diffs) times in rank $(rank)")
         println("error percentage of $(count_diffs/length(A.nzval)) in rank $(rank) ")
         if count_diffs < 20
-        println("true values: $(a_diff)")
-        println("gpu values: $(b_diff)")
-
+            println("A values: $(a_diff)")
+            println("B values: $(b_diff)")
         end
     end
         # println("true values: $(a_diff)")
