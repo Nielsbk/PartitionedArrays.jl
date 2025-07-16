@@ -1608,8 +1608,10 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
             if i <= N
                 p = perm[i]
-                CUDA.@atomic V_snd_data[p] -= V_snd_data[p]
-                CUDA.@atomic V_snd_data[p] += V_raw_snd_data[i]
+                if p > 0 && p <= N
+                    CUDA.@atomic V_snd_data[p] -= V_snd_data[p]
+                    CUDA.@atomic V_snd_data[p] += V_raw_snd_data[i]
+                end
             end
             return
         end
