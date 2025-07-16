@@ -1608,7 +1608,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
             if i <= N
                 p = perm[i]
-                V_snd_data[p] = V_raw_snd_data[i]
+                CUDA.@atomic V_snd_data[p] = V_raw_snd_data[i]
             end
             return
         end
@@ -1617,13 +1617,13 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
             # V_snd_data[perm] .= V_raw_snd_data
-            CUDA.@sync blocking=true V_snd_data[perm] .= V_raw_snd_data
+            # CUDA.@sync blocking=true V_snd_data[perm] .= V_raw_snd_data
             # N = length(perm)
-            # threads = 1024
-            # blocks = cld(N, threads)
-            # if N > 0
-            #     @cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
-            # end
+            threads = 256
+            blocks = cld(N, threads)
+            if N > 0
+                CUDA.@cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
+            end
         
     end
 
