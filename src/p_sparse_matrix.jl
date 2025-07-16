@@ -1597,9 +1597,11 @@ function psparse_yung_sheng_gpu!(A, V, cache)
         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
         if i <= N
             idx = perm[i]
-            tmp = V[idx[1]]
-            V[idx[1]] = V[idx[2]]
-            V[idx[2]] = tmp
+            if idx < N
+                tmp = V[idx[1]]
+                V[idx[1]] = V[idx[2]]
+                V[idx[2]] = tmp
+            end
         end
         return
     end
