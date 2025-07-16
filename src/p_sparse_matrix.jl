@@ -1616,13 +1616,13 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
-            # V_snd_data[perm] .= V_raw_snd_data
-            N = length(perm)
-            threads = 1024
-            blocks = cld(N, threads)
-            if N > 0
-                @cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
-            end
+            V_snd_data[perm] .= V_raw_snd_data
+            # N = length(perm)
+            # threads = 1024
+            # blocks = cld(N, threads)
+            # if N > 0
+            #     @cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
+            # end
         
     end
 
