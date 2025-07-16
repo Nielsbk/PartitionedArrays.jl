@@ -1623,7 +1623,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             V_snd_data = V_snd.data
             # V_snd_data[perm] .= V_raw_snd_data
             # CUDA.@sync blocking=true V_snd_data[perm] .= V_raw_snd_data
-            N = min(length(perm),length(V_raw_snd_data))
+            N = min(length(perm),length(V_raw_snd_data),length(V_snd_data))
             threads = 256
             blocks = cld(N, threads)
             if N > 0
