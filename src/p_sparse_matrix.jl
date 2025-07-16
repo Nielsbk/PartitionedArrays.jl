@@ -1612,7 +1612,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             end
             return
         end
-            perm_partition!(V, change_index)
+            CUDA.@sync perm_partition!(V, change_index)
             snd_index = snd_start_index:lastindex(V)
             V_raw_snd_data = @view V[snd_index]
             V_snd_data = V_snd.data
@@ -1622,7 +1622,7 @@ function psparse_yung_sheng_gpu!(A, V, cache)
             threads = 256
             blocks = cld(N, threads)
             if N > 0
-                CUDA.@cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
+                CUDA.@sync CUDA.@cuda threads=threads blocks=blocks scatter_kernel!(V_snd_data, perm, V_raw_snd_data,N)
             end
         
     end
