@@ -1562,7 +1562,7 @@ end
 
 function psparse_yung_sheng_gpu!(A, V, cache)
     function perm_partition!(V, perm)
-        N = length(perm)
+        N = min(length(perm),length(V))
         threads = 256
         if N > 0
             blocks = cld(N, threads)
