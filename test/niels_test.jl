@@ -278,6 +278,18 @@ function calc_parts(size,local_size)
     if local_size == 4
         parts_per_dir_local = (2,2,1)
     end
+    if local_size == 18
+        parts_per_dir_local = (3,3,2)
+    end
+    if local_size == 36
+        parts_per_dir_local = (4,3,3)
+    end
+    if local_size == 72
+        parts_per_dir_local = (6,4,3)
+    end
+    if local_size == 144
+        parts_per_dir_local = (6,6,4)
+    end
 
     return parts_per_dir, parts_per_dir_local
 end
@@ -307,15 +319,15 @@ function test(distribute)
     timing = distribute([[] for i in 1:size ])
 
     nodes_per_dir = map(i->5,parts_per_dir)
-    println(nodes_per_dir)
+    # println(nodes_per_dir)
     args = f(nodes_per_dir,parts_per_dir,ranks)
     args_seq = f(nodes_per_dir)
     A_seq, K = PartitionedArrays.sparse_matrix(args_seq...,reuse=true) 
     A, cache = PartitionedArrays.psparse_yung_sheng!(sparse,args...) |> fetch
 
-    println(typeof(A_seq))
-    println(typeof(args_seq)) 
-    println(typeof(K))
+    # println(typeof(A_seq))
+    # println(typeof(args_seq)) 
+    # println(typeof(K))
 
     _,_,V,_,_ = args
     _,_,V_seq,_,_ = args_seq
