@@ -287,8 +287,8 @@ function calc_parts(size,local_size)
     if local_size == 72
         parts_per_dir_local = (6,4,3)
     end
-    if local_size == 144
-        parts_per_dir_local = (6,6,4)
+    if local_size == 54
+        parts_per_dir_local = (6,3,3)
     end
 
     return parts_per_dir, parts_per_dir_local
