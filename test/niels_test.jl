@@ -284,6 +284,9 @@ function calc_parts(size,local_size)
     if local_size == 36
         parts_per_dir_local = (4,3,3)
     end
+    if local_size == 50
+        parts_per_dir_local = (5,5,2)
+    end
     if local_size == 72
         parts_per_dir_local = (6,4,3)
     end
@@ -500,7 +503,7 @@ function experiment(distribute)
     # Get the local rank and local size
     local_size = MPI.Comm_size(shared_comm)
     nruns = 15
-    filename="strongscaling_sync2_$(size)_$(local_size)_snellius.json"
+    filename="strongscaling_sync2_cpu_$(size)_$(local_size)_snellius.json"
 
     df = DataFrame()
     if rank == 0
@@ -512,8 +515,8 @@ function experiment(distribute)
         # end
     end
 
-    for type in ["cpu","gpu"]
-        for n in [20,50,100,150,200,250,300,400]
+    for type in ["cpu",]
+        for n in [20,50,100,150,200,250]
         # for n in [50]
             params = (n,PartitionedArrays.laplacian_fdm,nruns, type)
             timings,nnz,parts_per_dir, nodes_per_axis,gpus_per_axis= time(distribute,params...)
