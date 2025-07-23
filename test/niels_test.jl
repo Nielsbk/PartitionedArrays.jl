@@ -537,7 +537,7 @@ function experiment(distribute)
     end
 
 end
-PartitionedArrays.with_mpi(test)
+PartitionedArrays.with_mpi(experiment)
 
 # function main(distribute)
 
