@@ -342,7 +342,184 @@ end
 
 
 
+function node_strong_scaling_experiment(df,filename)
+    df = df[df.nodes_per_dir .< 290 , :]
+    cpu = df[df.type .== "cpu" , :]
+    gpu = df[df.type .== "gpu" , :]
+    # cpu = cpu[(cpu["num_workers"] .% 18 .== 0) .| (cpu["num_workers"] .== 1),:]
+    cpu = filter(cpu -> cpu.workers == 1 || cpu.workers % 18 == 0, cpu)
+    gpu = filter(gpu -> gpu.workers < 20, gpu) #temp till 
 
+    p1 = plot(legend=false)
+    p2 = plot(legend=false)
+
+
+    num_workers_gpu = sort(unique(gpu.workers))
+    num_workers_cpu = sort(unique(cpu.workers))
+
+
+    for (i,n) in enumerate(unique(cpu.nodes_per_dir))
+        df_gpu = gpu[gpu.nodes_per_dir .== n , :]
+        df_cpu = cpu[cpu.nodes_per_dir .== n , :]
+
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
+
+        base_gpu = df_gpu[!,"best_time"][1]
+        base_cpu = df_cpu[!,"best_time"][1]
+
+        speedup_gpu =   base_gpu ./ df_gpu[!,"best_time"]
+        speedup_cpu =   base_cpu ./ df_cpu[!,"best_time"]
+        if i == 1
+            plot!(
+                p1,
+                num_workers_gpu, num_workers_gpu,
+                label = "ideal",
+                # xticks=2:2:20,
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "GPUs",
+                ylabel = "Speedup",
+                title = " Strong scaling speedup GPU",
+                linewidth = 2,
+            )
+            plot!(
+                p2,
+                num_workers_cpu, num_workers_cpu,
+                label =false,
+                # xticks=2:2:20,
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "Cores",
+                ylabel = "Speedup",
+                title = " Strong scaling speedup CPU",
+                linewidth = 2,
+            )
+        end
+        plot!(p1,num_workers_gpu, speedup_gpu, label = "Problem size: $(n)³",marker=markers[i])
+        plot!(p2,num_workers_cpu, speedup_cpu, label =false,marker=markers[i])
+    end
+
+    plot(p1, p2, layout=(1,2), legend=:topleft,size=(900, 600))
+    savefig("option_1_"*filename)
+
+
+
+    p1 = plot(legend=false,xlabel = "GPUs", ylabel = "Time(s)", title = " Wall times GPU", yscale=:log10,xscale=:log10)
+    p2 = plot(legend=false,xlabel = "Cores", ylabel = "Time(s)", title = " Wall times CPU",yscale=:log10,xscale=:log10)
+
+
+    num_workers_gpu = sort(unique(gpu.workers))
+    num_workers_cpu = sort(unique(cpu.workers))
+
+    
+    for (i,n) in enumerate(unique(cpu.nodes_per_dir))
+        df_gpu = gpu[gpu.nodes_per_dir .== n , :]
+        df_cpu = cpu[cpu.nodes_per_dir .== n , :]
+
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
+
+        # speedup_gpu =   base_gpu ./ df_gpu[!,"best_time"]
+        # speedup_cpu =   base_cpu ./ df_cpu[!,"best_time"]
+
+        plot!(p1,num_workers_gpu, df_gpu[!,"best_time"], label = false,marker=markers[i])
+        plot!(p2,num_workers_cpu, df_cpu[!,"best_time"], label ="Problem size: $(n)³",marker=markers[i])
+    end
+    # ylims!(p1,0,maximum(df.best_time) *1.1)
+    # ylims!(p2,0,maximum(df.best_time) *1.1)
+    
+    plot(p1, p2, layout=(1,2), legend=:outerright,size=(900, 600))
+    savefig("option_1_wall"*filename)
+
+    p1 = plot(legend=false)
+    p2 = plot(legend=false)
+
+    cpu = filter(cpu -> cpu.workers % 18 == 0, cpu)
+
+    num_workers_gpu = sort(unique(gpu.workers))
+    num_workers_cpu = sort(unique(cpu.workers)) ./ 18
+    for (i,n) in enumerate(unique(cpu.nodes_per_dir))
+        df_gpu = gpu[gpu.nodes_per_dir .== n , :]
+        df_cpu = cpu[cpu.nodes_per_dir .== n , :]
+
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
+
+        base_gpu = df_gpu[!,"best_time"][1]
+        base_cpu = df_cpu[!,"best_time"][1]
+
+        speedup_gpu =   base_gpu ./ df_gpu[!,"best_time"]
+        speedup_cpu =   base_cpu ./ df_cpu[!,"best_time"]
+
+        # println(length(speedup_cpu))
+        # println(length(num_workers_cpu))
+        if i == 1
+            plot!(
+                p1,
+                num_workers_gpu, num_workers_gpu,
+                label = "ideal",
+                # xticks=2:2:20,
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "quarter nodes",
+                ylabel = "Speedup",
+                title = " Strong scaling speedup GPU",
+                linewidth = 2,
+            )
+            plot!(
+                p2,
+                num_workers_cpu, num_workers_cpu,
+                label =false,
+                # xticks=2:2:20,
+                linecolor=:black,
+                linestyle=:dash,
+                xlabel = "quarter nodes",
+                ylabel = "Speedup",
+                title = " Strong scaling speedup cPU",
+                linewidth = 2,
+            )
+        end
+        plot!(p1,num_workers_gpu, speedup_gpu, label = "Problem size: $(n)³",marker=markers[i])
+        plot!(p2,num_workers_cpu, speedup_cpu, label = false,marker=markers[i])
+    end
+    ylims!(p1,0,35)
+    ylims!(p2,0,35)
+    plot(p1, p2, layout=(1,2), legend=:topleft,size=(1000, 600))
+    savefig("option_2_"*filename)
+
+    for (i,n) in enumerate(unique(cpu.nodes_per_dir))
+        df_gpu = gpu[gpu.nodes_per_dir .== n , :]
+        df_cpu = cpu[cpu.nodes_per_dir .== n , :]
+
+        sort!(df_gpu,[:workers])
+        sort!(df_cpu,[:workers])
+        base_gpu = df_gpu[!,"best_time"][1]
+        base_cpu = df_cpu[!,"best_time"][1]
+
+        speedup =   df_cpu[!,"best_time"] ./ df_gpu[!,"best_time"]
+        # speedup_cpu =   base_cpu ./ df_cpu[!,"best_time"]
+
+        # println(length(speedup_cpu))
+        # println(length(num_workers_cpu))
+        if i == 1
+            plot(
+                num_workers_gpu, speedup,
+                label = false,
+                # xticks=2:2:20,
+                xlabel = "quarter nodes",
+                ylabel = "Speedup",
+                title = " Strong scaling speedup GPU vs CPU",
+                linewidth = 2,
+                legend=:outertopright
+            )
+        end
+        plot!(num_workers_gpu, speedup, label = "Problem size: $(n)³",marker=markers[i])
+    end
+
+    # plot(p1, p2, layout=(1,2), legend=:outerright,size=(1000, 400))
+    savefig("option_3_speedup"*filename)
+end
 
 function strong_scaling_snellius_experiment(df,filename)
     df = df[df.nodes_per_dir .< 350 , :]
@@ -373,6 +550,9 @@ function strong_scaling_snellius_experiment(df,filename)
     
     end
     savefig("speedup_"*filename)
+
+
+
 
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_cpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "cpu") , :]
@@ -413,9 +593,9 @@ function strong_scaling_snellius_experiment(df,filename)
                 num_workers, time,
                 xlabel = "GPUs",
                 ylabel = "Time(s)",
-                yscale = :log10,
-                # xscale = :log10,
-                xticks=2:2:20,
+                yscale = :log2,
+                xscale = :log2,
+                xticks=(num_workers, string.(num_workers)),
                 title = " Strong scaling wall times",
                 linewidth = 2,
                 legend = :outertopright,
@@ -435,17 +615,19 @@ end
 function weak_scaling_snellius_experiment(df,filename)
     num_workers = sort(unique(df.workers))
 
+    p = []
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
         sort!(df_gpu,[:workers])
         base = df_gpu[!,"best_time"][1]
         speedup =   base ./ df_gpu[!,"best_time"]
         if i == 1
-            plot(
+           p=  plot(
                 num_workers, [1.0 for i in num_workers],
                 label = "Ideal",
                 linecolor=:black,
                 linestyle=:dash,
+                # ylims = 0:0.2:1,
                 xticks=2:2:20,
                 xlabel = "GPUs",
                 ylabel = "efficiency",
@@ -454,11 +636,13 @@ function weak_scaling_snellius_experiment(df,filename)
                 legend = :outertopright
             )
         end
+        ylims!(p,0,1.1)
         plot!(num_workers, speedup, label = "Local problem size: $(n)³", marker=markers[i])
         
     end
     savefig("speedup_"*filename)
 
+    p = []
     for (i,n) in enumerate(unique(df.nodes_per_dir))
         df_cpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "cpu") , :]
         df_gpu = df[(df.nodes_per_dir .== n) .&& (df.type .== "gpu") , :]
@@ -468,12 +652,13 @@ function weak_scaling_snellius_experiment(df,filename)
         speedup = df_cpu[!,"best_time"]  ./ df_gpu[!,"best_time"]
 
         if i == 1
-            plot(
+            p = plot(
                 num_workers, speedup,
                 label = "Problem size: $(n)³",
                 xlabel = "GPUs/CPUs",
                 # yscale = :log2,
                 # xscale = :log2,
+                # yticks=0:0.2:1,
                 xticks=2:2:20,
                 ylabel = "Speedup",
                 title = " Weak scaling speedup GPU vs CPU",
@@ -484,6 +669,7 @@ function weak_scaling_snellius_experiment(df,filename)
         else
             plot!(num_workers, speedup, label = "Local problem size: $(n)³",marker=markers[i])
         end
+        # ylims!(p, 0, 1)
     end
     savefig("gpu_vs_cpu_"*filename)
 
@@ -499,8 +685,8 @@ function weak_scaling_snellius_experiment(df,filename)
                 xlabel = "GPUs",
                 ylabel = "Time(s)",
                 yscale = :log10,
-                # xscale = :log2,
-                xticks=2:2:20,
+                xscale = :log10,
+                xticks = (num_workers, string.(num_workers)),
                 title = " Weak scaling wall times",
                 linewidth = 2,
                 legend = :outertopright,
